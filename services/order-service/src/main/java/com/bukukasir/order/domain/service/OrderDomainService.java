@@ -66,6 +66,9 @@ public class OrderDomainService implements OrderUseCase {
     @Override
     public Order voidOrder(String orderId, String reason) {
         Order order = getOrderById(orderId);
+        if (order.getStatus() == OrderStatus.VOIDED) {
+            throw new BusinessException("ORDER_ALREADY_VOIDED", "Order sudah divoid");
+        }
         order.setStatus(OrderStatus.VOIDED);
         order.setNotes(reason);
         order.setUpdatedAt(Instant.now());
