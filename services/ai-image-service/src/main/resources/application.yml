@@ -1,0 +1,19 @@
+server:
+  port: 8090
+spring:
+  application:
+    name: ai-image-service
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+springdoc:
+  api-docs:
+    path: /api/images/v3/api-docs
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

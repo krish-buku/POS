@@ -1,0 +1,2020 @@
+{
+  "info": {
+    "_postman_id": "bukukasir-api-collection",
+    "name": "BukuKasir API",
+    "description": "Complete API collection for BukuKasir - Indonesian F&B Point of Sale system.\n\nThis collection covers all 14 microservices with mock data pre-loaded.\n\nBase URLs use environment variables so you can switch between direct service access and API Gateway routing.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth Service",
+      "description": "PIN-based authentication endpoints (port 8081)",
+      "item": [
+        {
+          "name": "Verify PIN",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessId\": \"biz-001\",\n  \"pin\": \"1234\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/verify-pin",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "verify-pin"]
+            },
+            "description": "Authenticates a staff member using their 4-6 digit PIN and returns a session with JWT token."
+          },
+          "response": [
+            {
+              "name": "200 - PIN Verified",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"PIN verified successfully\",\n  \"data\": {\n    \"sessionId\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"staffId\": \"staff-001\",\n    \"staffName\": \"Budi Santoso\",\n    \"role\": \"OWNER\",\n    \"businessId\": \"biz-001\",\n    \"expiresAt\": \"2026-03-29T00:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Change PIN",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"staffId\": \"staff-001\",\n  \"currentPin\": \"1234\",\n  \"newPin\": \"5678\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/change-pin",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "change-pin"]
+            },
+            "description": "Changes a staff member's PIN. Requires the current PIN for verification."
+          },
+          "response": [
+            {
+              "name": "200 - PIN Changed",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"PIN changed successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reset PIN",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"staffId\": \"staff-003\",\n  \"managerStaffId\": \"staff-001\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/reset-pin",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "reset-pin"]
+            },
+            "description": "Resets a staff member's PIN. Only managers can perform this action."
+          },
+          "response": [
+            {
+              "name": "200 - PIN Reset",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"PIN reset successfully\",\n  \"data\": {\n    \"newPin\": \"9012\",\n    \"staffId\": \"staff-003\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Current Session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/session?staffId=staff-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "session"],
+              "query": [
+                { "key": "staffId", "value": "staff-001" }
+              ]
+            },
+            "description": "Returns the current session information for the specified staff member."
+          },
+          "response": [
+            {
+              "name": "200 - Session Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"sessionId\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"staffId\": \"staff-001\",\n    \"staffName\": \"Budi Santoso\",\n    \"role\": \"OWNER\",\n    \"businessId\": \"biz-001\",\n    \"expiresAt\": \"2026-03-29T00:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Available Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/auth/roles",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "auth", "roles"]
+            },
+            "description": "Returns all available staff roles in the system."
+          },
+          "response": [
+            {
+              "name": "200 - Roles Listed",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Roles retrieved successfully\",\n  \"data\": [\"OWNER\", \"MANAGER\", \"CASHIER\", \"WAITER\", \"KITCHEN\"]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User & Business Service",
+      "description": "Business management endpoints (port 8082)",
+      "item": [
+        {
+          "name": "Get All Businesses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/businesses",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "businesses"]
+            },
+            "description": "Returns all businesses."
+          },
+          "response": [
+            {
+              "name": "200 - Businesses Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"biz-001\",\n      \"name\": \"Warung Nusantara\",\n      \"type\": \"restaurant\",\n      \"address\": \"Jl. Sudirman No. 123, Jakarta Selatan\",\n      \"phone\": \"+62-21-5551234\",\n      \"ownerId\": \"user-001\",\n      \"logoUrl\": null,\n      \"currency\": \"IDR\",\n      \"timezone\": \"Asia/Jakarta\",\n      \"active\": true,\n      \"createdAt\": \"2026-01-15T08:00:00Z\",\n      \"updatedAt\": \"2026-03-28T10:00:00Z\"\n    },\n    {\n      \"id\": \"biz-002\",\n      \"name\": \"Kopi Kenangan Senja\",\n      \"type\": \"cafe\",\n      \"address\": \"Jl. Gatot Subroto No. 45, Jakarta Pusat\",\n      \"phone\": \"+62-21-5559876\",\n      \"ownerId\": \"user-002\",\n      \"logoUrl\": null,\n      \"currency\": \"IDR\",\n      \"timezone\": \"Asia/Jakarta\",\n      \"active\": true,\n      \"createdAt\": \"2026-02-01T08:00:00Z\",\n      \"updatedAt\": \"2026-03-28T10:00:00Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Business by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/businesses/biz-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "businesses", "biz-001"]
+            },
+            "description": "Returns a specific business by ID."
+          },
+          "response": [
+            {
+              "name": "200 - Business Found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"id\": \"biz-001\",\n    \"name\": \"Warung Nusantara\",\n    \"type\": \"restaurant\",\n    \"address\": \"Jl. Sudirman No. 123, Jakarta Selatan\",\n    \"phone\": \"+62-21-5551234\",\n    \"ownerId\": \"user-001\",\n    \"logoUrl\": null,\n    \"currency\": \"IDR\",\n    \"timezone\": \"Asia/Jakarta\",\n    \"active\": true,\n    \"createdAt\": \"2026-01-15T08:00:00Z\",\n    \"updatedAt\": \"2026-03-28T10:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bakso Pak Kumis\",\n  \"type\": \"restaurant\",\n  \"address\": \"Jl. Malioboro No. 78, Yogyakarta\",\n  \"phone\": \"+62-274-551234\",\n  \"ownerId\": \"user-003\",\n  \"logoUrl\": null\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/businesses",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "businesses"]
+            },
+            "description": "Creates a new business."
+          },
+          "response": [
+            {
+              "name": "201 - Business Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Business created\",\n  \"data\": {\n    \"id\": \"biz-003\",\n    \"name\": \"Bakso Pak Kumis\",\n    \"type\": \"restaurant\",\n    \"address\": \"Jl. Malioboro No. 78, Yogyakarta\",\n    \"phone\": \"+62-274-551234\",\n    \"ownerId\": \"user-003\",\n    \"logoUrl\": null,\n    \"currency\": \"IDR\",\n    \"timezone\": \"Asia/Jakarta\",\n    \"active\": true,\n    \"createdAt\": \"2026-03-28T12:00:00Z\",\n    \"updatedAt\": \"2026-03-28T12:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Business",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Warung Nusantara Baru\",\n  \"type\": \"restaurant\",\n  \"address\": \"Jl. Sudirman No. 456, Jakarta Selatan\",\n  \"phone\": \"+62-21-5559999\",\n  \"ownerId\": \"user-001\",\n  \"logoUrl\": null\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/businesses/biz-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "businesses", "biz-001"]
+            },
+            "description": "Updates an existing business."
+          },
+          "response": [
+            {
+              "name": "200 - Business Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Business updated\",\n  \"data\": {\n    \"id\": \"biz-001\",\n    \"name\": \"Warung Nusantara Baru\",\n    \"type\": \"restaurant\",\n    \"address\": \"Jl. Sudirman No. 456, Jakarta Selatan\",\n    \"phone\": \"+62-21-5559999\",\n    \"ownerId\": \"user-001\",\n    \"logoUrl\": null,\n    \"currency\": \"IDR\",\n    \"timezone\": \"Asia/Jakarta\",\n    \"active\": true,\n    \"createdAt\": \"2026-01-15T08:00:00Z\",\n    \"updatedAt\": \"2026-03-28T14:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Transfer Ownership",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessId\": \"biz-001\",\n  \"fromOwnerId\": \"user-001\",\n  \"toOwnerId\": \"user-002\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/businesses/transfer-ownership",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "businesses", "transfer-ownership"]
+            },
+            "description": "Transfers ownership of a business to another user."
+          },
+          "response": [
+            {
+              "name": "200 - Ownership Transferred",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Ownership transferred\",\n  \"data\": {\n    \"id\": \"transfer-001\",\n    \"businessId\": \"biz-001\",\n    \"fromOwnerId\": \"user-001\",\n    \"toOwnerId\": \"user-002\",\n    \"transferredAt\": \"2026-03-28T15:00:00Z\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Staff Service",
+      "description": "Staff management endpoints (port 8083)",
+      "item": [
+        {
+          "name": "Get All Staff",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/staff?businessId=biz-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "staff"],
+              "query": [
+                { "key": "businessId", "value": "biz-001" }
+              ]
+            },
+            "description": "Returns all staff members, optionally filtered by business ID."
+          },
+          "response": [
+            {
+              "name": "200 - Staff Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"staff-001\",\n      \"name\": \"Budi Santoso\",\n      \"email\": \"budi@warung.com\",\n      \"phone\": \"+62-812-3456-7890\",\n      \"role\": \"OWNER\",\n      \"businessId\": \"biz-001\",\n      \"permissions\": [\"ALL\"],\n      \"active\": true,\n      \"createdAt\": \"2026-01-15T08:00:00Z\",\n      \"updatedAt\": \"2026-03-28T10:00:00Z\"\n    },\n    {\n      \"id\": \"staff-002\",\n      \"name\": \"Siti Rahayu\",\n      \"email\": \"siti@warung.com\",\n      \"phone\": \"+62-813-9876-5432\",\n      \"role\": \"MANAGER\",\n      \"businessId\": \"biz-001\",\n      \"permissions\": [\"MANAGE_STAFF\", \"MANAGE_MENU\", \"VIEW_REPORTS\", \"MANAGE_ORDERS\"],\n      \"active\": true,\n      \"createdAt\": \"2026-01-20T08:00:00Z\",\n      \"updatedAt\": \"2026-03-28T10:00:00Z\"\n    },\n    {\n      \"id\": \"staff-003\",\n      \"name\": \"Ahmad Wijaya\",\n      \"email\": \"ahmad@warung.com\",\n      \"phone\": \"+62-857-1234-5678\",\n      \"role\": \"CASHIER\",\n      \"businessId\": \"biz-001\",\n      \"permissions\": [\"MANAGE_ORDERS\", \"PROCESS_PAYMENTS\"],\n      \"active\": true,\n      \"createdAt\": \"2026-02-01T08:00:00Z\",\n      \"updatedAt\": \"2026-03-28T10:00:00Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Staff by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/staff/staff-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "staff", "staff-001"]
+            },
+            "description": "Returns a specific staff member by ID."
+          },
+          "response": [
+            {
+              "name": "200 - Staff Found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"id\": \"staff-001\",\n    \"name\": \"Budi Santoso\",\n    \"email\": \"budi@warung.com\",\n    \"phone\": \"+62-812-3456-7890\",\n    \"role\": \"OWNER\",\n    \"businessId\": \"biz-001\",\n    \"permissions\": [\"ALL\"],\n    \"active\": true,\n    \"createdAt\": \"2026-01-15T08:00:00Z\",\n    \"updatedAt\": \"2026-03-28T10:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Staff",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dewi Lestari\",\n  \"email\": \"dewi@warung.com\",\n  \"phone\": \"+62-878-5555-1234\",\n  \"role\": \"WAITER\",\n  \"businessId\": \"biz-001\",\n  \"pin\": \"4321\",\n  \"permissions\": [\"MANAGE_ORDERS\"],\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/staff",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "staff"]
+            },
+            "description": "Creates a new staff member with a PIN."
+          },
+          "response": [
+            {
+              "name": "201 - Staff Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Staff created\",\n  \"data\": {\n    \"id\": \"staff-004\",\n    \"name\": \"Dewi Lestari\",\n    \"email\": \"dewi@warung.com\",\n    \"phone\": \"+62-878-5555-1234\",\n    \"role\": \"WAITER\",\n    \"businessId\": \"biz-001\",\n    \"permissions\": [\"MANAGE_ORDERS\"],\n    \"active\": true,\n    \"createdAt\": \"2026-03-28T12:00:00Z\",\n    \"updatedAt\": \"2026-03-28T12:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Staff",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Siti Rahayu\",\n  \"email\": \"siti.rahayu@warung.com\",\n  \"phone\": \"+62-813-9876-5432\",\n  \"role\": \"MANAGER\",\n  \"businessId\": \"biz-001\",\n  \"pin\": null,\n  \"permissions\": [\"MANAGE_STAFF\", \"MANAGE_MENU\", \"VIEW_REPORTS\", \"MANAGE_ORDERS\", \"PROCESS_PAYMENTS\"],\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/staff/staff-002",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "staff", "staff-002"]
+            },
+            "description": "Updates an existing staff member."
+          },
+          "response": [
+            {
+              "name": "200 - Staff Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Staff updated\",\n  \"data\": {\n    \"id\": \"staff-002\",\n    \"name\": \"Siti Rahayu\",\n    \"email\": \"siti.rahayu@warung.com\",\n    \"phone\": \"+62-813-9876-5432\",\n    \"role\": \"MANAGER\",\n    \"businessId\": \"biz-001\",\n    \"permissions\": [\"MANAGE_STAFF\", \"MANAGE_MENU\", \"VIEW_REPORTS\", \"MANAGE_ORDERS\", \"PROCESS_PAYMENTS\"],\n    \"active\": true,\n    \"createdAt\": \"2026-01-20T08:00:00Z\",\n    \"updatedAt\": \"2026-03-28T14:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Staff",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/staff/staff-004",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "staff", "staff-004"]
+            },
+            "description": "Deletes a staff member."
+          },
+          "response": [
+            {
+              "name": "200 - Staff Deleted",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Staff deleted\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reset Staff PIN",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/staff/staff-003/reset-pin",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "staff", "staff-003", "reset-pin"]
+            },
+            "description": "Resets a staff member's PIN and returns the new one."
+          },
+          "response": [
+            {
+              "name": "200 - PIN Reset",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"PIN reset successfully\",\n  \"data\": {\n    \"staffId\": \"staff-003\",\n    \"newPin\": \"7890\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Menu Service",
+      "description": "Menu management endpoints (port 8084)",
+      "item": [
+        {
+          "name": "Categories",
+          "description": "Menu category CRUD operations",
+          "item": [
+            {
+              "name": "Get All Categories",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{gateway_url}}/api/menu/categories?businessId=biz-001",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "menu", "categories"],
+                  "query": [
+                    { "key": "businessId", "value": "biz-001" }
+                  ]
+                },
+                "description": "Returns all menu categories, optionally filtered by business."
+              },
+              "response": [
+                {
+                  "name": "200 - Categories Retrieved",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"cat-001\",\n      \"name\": \"Makanan\",\n      \"description\": \"Hidangan utama\",\n      \"businessId\": \"biz-001\",\n      \"sortOrder\": 1\n    },\n    {\n      \"id\": \"cat-002\",\n      \"name\": \"Minuman\",\n      \"description\": \"Aneka minuman segar\",\n      \"businessId\": \"biz-001\",\n      \"sortOrder\": 2\n    },\n    {\n      \"id\": \"cat-003\",\n      \"name\": \"Snack\",\n      \"description\": \"Makanan ringan dan gorengan\",\n      \"businessId\": \"biz-001\",\n      \"sortOrder\": 3\n    }\n  ]\n}"
+                }
+              ]
+            },
+            {
+              "name": "Create Category",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Dessert\",\n  \"description\": \"Aneka hidangan penutup\",\n  \"businessId\": \"biz-001\",\n  \"sortOrder\": 4\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/api/menu/categories",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "menu", "categories"]
+                },
+                "description": "Creates a new menu category."
+              },
+              "response": [
+                {
+                  "name": "201 - Category Created",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Category created\",\n  \"data\": {\n    \"id\": \"cat-004\",\n    \"name\": \"Dessert\",\n    \"description\": \"Aneka hidangan penutup\",\n    \"businessId\": \"biz-001\",\n    \"sortOrder\": 4\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Update Category",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Makanan Utama\",\n  \"description\": \"Hidangan utama dan nasi\",\n  \"businessId\": \"biz-001\",\n  \"sortOrder\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/api/menu/categories/cat-001",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "menu", "categories", "cat-001"]
+                },
+                "description": "Updates an existing menu category."
+              },
+              "response": [
+                {
+                  "name": "200 - Category Updated",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Category updated\",\n  \"data\": {\n    \"id\": \"cat-001\",\n    \"name\": \"Makanan Utama\",\n    \"description\": \"Hidangan utama dan nasi\",\n    \"businessId\": \"biz-001\",\n    \"sortOrder\": 1\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Delete Category",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{gateway_url}}/api/menu/categories/cat-004",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "menu", "categories", "cat-004"]
+                },
+                "description": "Deletes a menu category."
+              },
+              "response": [
+                {
+                  "name": "200 - Category Deleted",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Category deleted\",\n  \"data\": null\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Items",
+          "description": "Menu item CRUD operations",
+          "item": [
+            {
+              "name": "Get All Menu Items",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{gateway_url}}/api/menu/items?businessId=biz-001",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "menu", "items"],
+                  "query": [
+                    { "key": "businessId", "value": "biz-001" }
+                  ]
+                },
+                "description": "Returns all menu items, optionally filtered by business or category."
+              },
+              "response": [
+                {
+                  "name": "200 - Items Retrieved",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"item-001\",\n      \"name\": \"Nasi Goreng Spesial\",\n      \"description\": \"Nasi goreng dengan telur, ayam, dan sayuran segar\",\n      \"price\": 35000,\n      \"categoryId\": \"cat-001\",\n      \"businessId\": \"biz-001\",\n      \"imageUrl\": null,\n      \"available\": true,\n      \"variants\": [],\n      \"modifierGroups\": []\n    },\n    {\n      \"id\": \"item-002\",\n      \"name\": \"Ayam Bakar Madu\",\n      \"description\": \"Ayam bakar dengan saus madu spesial\",\n      \"price\": 45000,\n      \"categoryId\": \"cat-001\",\n      \"businessId\": \"biz-001\",\n      \"imageUrl\": null,\n      \"available\": true,\n      \"variants\": [],\n      \"modifierGroups\": []\n    },\n    {\n      \"id\": \"item-003\",\n      \"name\": \"Soto Ayam\",\n      \"description\": \"Soto ayam khas Jawa dengan kuah bening\",\n      \"price\": 30000,\n      \"categoryId\": \"cat-001\",\n      \"businessId\": \"biz-001\",\n      \"imageUrl\": null,\n      \"available\": true,\n      \"variants\": [],\n      \"modifierGroups\": []\n    },\n    {\n      \"id\": \"item-004\",\n      \"name\": \"Es Teh Manis\",\n      \"description\": \"Teh manis dingin segar\",\n      \"price\": 8000,\n      \"categoryId\": \"cat-002\",\n      \"businessId\": \"biz-001\",\n      \"imageUrl\": null,\n      \"available\": true,\n      \"variants\": [],\n      \"modifierGroups\": []\n    },\n    {\n      \"id\": \"item-005\",\n      \"name\": \"Es Jeruk\",\n      \"description\": \"Jeruk peras segar dengan es\",\n      \"price\": 12000,\n      \"categoryId\": \"cat-002\",\n      \"businessId\": \"biz-001\",\n      \"imageUrl\": null,\n      \"available\": true,\n      \"variants\": [],\n      \"modifierGroups\": []\n    }\n  ]\n}"
+                }
+              ]
+            },
+            {
+              "name": "Get Menu Item by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{gateway_url}}/api/menu/items/item-001",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "menu", "items", "item-001"]
+                },
+                "description": "Returns a specific menu item by ID."
+              },
+              "response": [
+                {
+                  "name": "200 - Item Found",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"id\": \"item-001\",\n    \"name\": \"Nasi Goreng Spesial\",\n    \"description\": \"Nasi goreng dengan telur, ayam, dan sayuran segar\",\n    \"price\": 35000,\n    \"categoryId\": \"cat-001\",\n    \"businessId\": \"biz-001\",\n    \"imageUrl\": null,\n    \"available\": true,\n    \"variants\": [],\n    \"modifierGroups\": []\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Create Menu Item",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Rendang Sapi\",\n  \"description\": \"Rendang sapi empuk khas Padang\",\n  \"price\": 55000,\n  \"categoryId\": \"cat-001\",\n  \"businessId\": \"biz-001\",\n  \"imageUrl\": null\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/api/menu/items",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "menu", "items"]
+                },
+                "description": "Creates a new menu item."
+              },
+              "response": [
+                {
+                  "name": "201 - Item Created",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Menu item created\",\n  \"data\": {\n    \"id\": \"item-006\",\n    \"name\": \"Rendang Sapi\",\n    \"description\": \"Rendang sapi empuk khas Padang\",\n    \"price\": 55000,\n    \"categoryId\": \"cat-001\",\n    \"businessId\": \"biz-001\",\n    \"imageUrl\": null,\n    \"available\": true,\n    \"variants\": [],\n    \"modifierGroups\": []\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Update Menu Item",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Nasi Goreng Spesial Komplit\",\n  \"description\": \"Nasi goreng spesial dengan telur mata sapi, ayam suwir, kerupuk, dan acar\",\n  \"price\": 40000,\n  \"categoryId\": \"cat-001\",\n  \"businessId\": \"biz-001\",\n  \"imageUrl\": null\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/api/menu/items/item-001",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "menu", "items", "item-001"]
+                },
+                "description": "Updates an existing menu item."
+              },
+              "response": [
+                {
+                  "name": "200 - Item Updated",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Menu item updated\",\n  \"data\": {\n    \"id\": \"item-001\",\n    \"name\": \"Nasi Goreng Spesial Komplit\",\n    \"description\": \"Nasi goreng spesial dengan telur mata sapi, ayam suwir, kerupuk, dan acar\",\n    \"price\": 40000,\n    \"categoryId\": \"cat-001\",\n    \"businessId\": \"biz-001\",\n    \"imageUrl\": null,\n    \"available\": true,\n    \"variants\": [],\n    \"modifierGroups\": []\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Delete Menu Item",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{gateway_url}}/api/menu/items/item-006",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "menu", "items", "item-006"]
+                },
+                "description": "Deletes a menu item."
+              },
+              "response": [
+                {
+                  "name": "200 - Item Deleted",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Menu item deleted\",\n  \"data\": null\n}"
+                }
+              ]
+            },
+            {
+              "name": "Toggle Item Availability",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"available\": false\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/api/menu/items/item-003/availability",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "menu", "items", "item-003", "availability"]
+                },
+                "description": "Toggles the availability of a menu item (e.g., mark as sold out)."
+              },
+              "response": [
+                {
+                  "name": "200 - Availability Updated",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Availability updated\",\n  \"data\": {\n    \"id\": \"item-003\",\n    \"name\": \"Soto Ayam\",\n    \"description\": \"Soto ayam khas Jawa dengan kuah bening\",\n    \"price\": 30000,\n    \"categoryId\": \"cat-001\",\n    \"businessId\": \"biz-001\",\n    \"imageUrl\": null,\n    \"available\": false,\n    \"variants\": [],\n    \"modifierGroups\": []\n  }\n}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Table Service",
+      "description": "Table management endpoints (port 8085)",
+      "item": [
+        {
+          "name": "Get All Tables",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/tables?businessId=biz-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "tables"],
+              "query": [
+                { "key": "businessId", "value": "biz-001" }
+              ]
+            },
+            "description": "Returns all tables, optionally filtered by business."
+          },
+          "response": [
+            {
+              "name": "200 - Tables Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"table-001\",\n      \"name\": \"T1\",\n      \"capacity\": 4,\n      \"status\": \"AVAILABLE\",\n      \"areaId\": \"area-001\",\n      \"floorId\": \"floor-001\",\n      \"businessId\": \"biz-001\",\n      \"currentOrderId\": null\n    },\n    {\n      \"id\": \"table-002\",\n      \"name\": \"T2\",\n      \"capacity\": 4,\n      \"status\": \"OCCUPIED\",\n      \"areaId\": \"area-001\",\n      \"floorId\": \"floor-001\",\n      \"businessId\": \"biz-001\",\n      \"currentOrderId\": \"order-001\"\n    },\n    {\n      \"id\": \"table-003\",\n      \"name\": \"T3\",\n      \"capacity\": 6,\n      \"status\": \"AVAILABLE\",\n      \"areaId\": \"area-001\",\n      \"floorId\": \"floor-001\",\n      \"businessId\": \"biz-001\",\n      \"currentOrderId\": null\n    },\n    {\n      \"id\": \"table-004\",\n      \"name\": \"VIP-1\",\n      \"capacity\": 8,\n      \"status\": \"RESERVED\",\n      \"areaId\": \"area-002\",\n      \"floorId\": \"floor-001\",\n      \"businessId\": \"biz-001\",\n      \"currentOrderId\": null\n    },\n    {\n      \"id\": \"table-005\",\n      \"name\": \"T5\",\n      \"capacity\": 2,\n      \"status\": \"AVAILABLE\",\n      \"areaId\": \"area-001\",\n      \"floorId\": \"floor-001\",\n      \"businessId\": \"biz-001\",\n      \"currentOrderId\": null\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Table by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/tables/table-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "tables", "table-001"]
+            },
+            "description": "Returns a specific table by ID."
+          },
+          "response": [
+            {
+              "name": "200 - Table Found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"id\": \"table-001\",\n    \"name\": \"T1\",\n    \"capacity\": 4,\n    \"status\": \"AVAILABLE\",\n    \"areaId\": \"area-001\",\n    \"floorId\": \"floor-001\",\n    \"businessId\": \"biz-001\",\n    \"currentOrderId\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Table",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"T6\",\n  \"capacity\": 4,\n  \"areaId\": \"area-001\",\n  \"floorId\": \"floor-001\",\n  \"businessId\": \"biz-001\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/tables",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "tables"]
+            },
+            "description": "Creates a new table."
+          },
+          "response": [
+            {
+              "name": "201 - Table Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Table created\",\n  \"data\": {\n    \"id\": \"table-006\",\n    \"name\": \"T6\",\n    \"capacity\": 4,\n    \"status\": \"AVAILABLE\",\n    \"areaId\": \"area-001\",\n    \"floorId\": \"floor-001\",\n    \"businessId\": \"biz-001\",\n    \"currentOrderId\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Table",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"VIP-2\",\n  \"capacity\": 10,\n  \"areaId\": \"area-002\",\n  \"floorId\": \"floor-001\",\n  \"businessId\": \"biz-001\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/tables/table-005",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "tables", "table-005"]
+            },
+            "description": "Updates an existing table."
+          },
+          "response": [
+            {
+              "name": "200 - Table Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Table updated\",\n  \"data\": {\n    \"id\": \"table-005\",\n    \"name\": \"VIP-2\",\n    \"capacity\": 10,\n    \"status\": \"AVAILABLE\",\n    \"areaId\": \"area-002\",\n    \"floorId\": \"floor-001\",\n    \"businessId\": \"biz-001\",\n    \"currentOrderId\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Table Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"OCCUPIED\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/tables/table-001/status",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "tables", "table-001", "status"]
+            },
+            "description": "Updates the status of a table (AVAILABLE, OCCUPIED, RESERVED, CLEANING)."
+          },
+          "response": [
+            {
+              "name": "200 - Status Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Status updated\",\n  \"data\": {\n    \"id\": \"table-001\",\n    \"name\": \"T1\",\n    \"capacity\": 4,\n    \"status\": \"OCCUPIED\",\n    \"areaId\": \"area-001\",\n    \"floorId\": \"floor-001\",\n    \"businessId\": \"biz-001\",\n    \"currentOrderId\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Transfer Table",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromTableId\": \"table-002\",\n  \"toTableId\": \"table-003\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/tables/transfer",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "tables", "transfer"]
+            },
+            "description": "Transfers the current order from one table to another."
+          },
+          "response": [
+            {
+              "name": "200 - Table Transferred",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Table transferred\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Merge Tables",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tableIds\": [\"table-001\", \"table-003\"],\n  \"targetTableId\": \"table-001\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/tables/merge",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "tables", "merge"]
+            },
+            "description": "Merges multiple tables into a single target table."
+          },
+          "response": [
+            {
+              "name": "200 - Tables Merged",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Tables merged\",\n  \"data\": {\n    \"id\": \"table-001\",\n    \"name\": \"T1\",\n    \"capacity\": 10,\n    \"status\": \"OCCUPIED\",\n    \"areaId\": \"area-001\",\n    \"floorId\": \"floor-001\",\n    \"businessId\": \"biz-001\",\n    \"currentOrderId\": null\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Order Service",
+      "description": "Order management endpoints (port 8086)",
+      "item": [
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/orders",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Returns all orders."
+          },
+          "response": [
+            {
+              "name": "200 - Orders Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"order-001\",\n      \"orderNumber\": \"ORD-20260328-001\",\n      \"tableId\": \"table-002\",\n      \"tableName\": \"T2\",\n      \"staffId\": \"staff-003\",\n      \"staffName\": \"Ahmad Wijaya\",\n      \"businessId\": \"biz-001\",\n      \"items\": [\n        {\n          \"id\": \"oi-001\",\n          \"menuItemId\": \"item-001\",\n          \"menuItemName\": \"Nasi Goreng Spesial\",\n          \"quantity\": 2,\n          \"unitPrice\": 35000,\n          \"subtotal\": 70000,\n          \"notes\": \"Pedas level 3\",\n          \"modifiers\": [\"Extra telur\"],\n          \"variantName\": null\n        },\n        {\n          \"id\": \"oi-002\",\n          \"menuItemId\": \"item-004\",\n          \"menuItemName\": \"Es Teh Manis\",\n          \"quantity\": 2,\n          \"unitPrice\": 8000,\n          \"subtotal\": 16000,\n          \"notes\": null,\n          \"modifiers\": [],\n          \"variantName\": null\n        }\n      ],\n      \"subtotal\": 86000,\n      \"tax\": 8600,\n      \"total\": 94600,\n      \"status\": \"OPEN\",\n      \"notes\": null,\n      \"createdAt\": \"2026-03-28T11:30:00Z\",\n      \"updatedAt\": \"2026-03-28T11:30:00Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/orders/order-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "orders", "order-001"]
+            },
+            "description": "Returns a specific order by ID."
+          },
+          "response": [
+            {
+              "name": "200 - Order Found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"id\": \"order-001\",\n    \"orderNumber\": \"ORD-20260328-001\",\n    \"tableId\": \"table-002\",\n    \"tableName\": \"T2\",\n    \"staffId\": \"staff-003\",\n    \"staffName\": \"Ahmad Wijaya\",\n    \"businessId\": \"biz-001\",\n    \"items\": [\n      {\n        \"id\": \"oi-001\",\n        \"menuItemId\": \"item-001\",\n        \"menuItemName\": \"Nasi Goreng Spesial\",\n        \"quantity\": 2,\n        \"unitPrice\": 35000,\n        \"subtotal\": 70000,\n        \"notes\": \"Pedas level 3\",\n        \"modifiers\": [\"Extra telur\"],\n        \"variantName\": null\n      },\n      {\n        \"id\": \"oi-002\",\n        \"menuItemId\": \"item-004\",\n        \"menuItemName\": \"Es Teh Manis\",\n        \"quantity\": 2,\n        \"unitPrice\": 8000,\n        \"subtotal\": 16000,\n        \"notes\": null,\n        \"modifiers\": [],\n        \"variantName\": null\n      }\n    ],\n    \"subtotal\": 86000,\n    \"tax\": 8600,\n    \"total\": 94600,\n    \"status\": \"OPEN\",\n    \"notes\": null,\n    \"createdAt\": \"2026-03-28T11:30:00Z\",\n    \"updatedAt\": \"2026-03-28T11:30:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tableId\": \"table-001\",\n  \"tableName\": \"T1\",\n  \"staffId\": \"staff-003\",\n  \"staffName\": \"Ahmad Wijaya\",\n  \"businessId\": \"biz-001\",\n  \"items\": [\n    {\n      \"menuItemId\": \"item-002\",\n      \"menuItemName\": \"Ayam Bakar Madu\",\n      \"quantity\": 1,\n      \"unitPrice\": 45000,\n      \"notes\": \"Paha atas\",\n      \"modifiers\": [\"Extra sambal\"],\n      \"variantName\": null\n    },\n    {\n      \"menuItemId\": \"item-005\",\n      \"menuItemName\": \"Es Jeruk\",\n      \"quantity\": 2,\n      \"unitPrice\": 12000,\n      \"notes\": null,\n      \"modifiers\": [],\n      \"variantName\": null\n    }\n  ],\n  \"notes\": \"Tamu VIP, layani dengan baik\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/orders",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Creates a new order for a table."
+          },
+          "response": [
+            {
+              "name": "201 - Order Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Order created\",\n  \"data\": {\n    \"id\": \"order-002\",\n    \"orderNumber\": \"ORD-20260328-002\",\n    \"tableId\": \"table-001\",\n    \"tableName\": \"T1\",\n    \"staffId\": \"staff-003\",\n    \"staffName\": \"Ahmad Wijaya\",\n    \"businessId\": \"biz-001\",\n    \"items\": [\n      {\n        \"id\": \"oi-003\",\n        \"menuItemId\": \"item-002\",\n        \"menuItemName\": \"Ayam Bakar Madu\",\n        \"quantity\": 1,\n        \"unitPrice\": 45000,\n        \"subtotal\": 45000,\n        \"notes\": \"Paha atas\",\n        \"modifiers\": [\"Extra sambal\"],\n        \"variantName\": null\n      },\n      {\n        \"id\": \"oi-004\",\n        \"menuItemId\": \"item-005\",\n        \"menuItemName\": \"Es Jeruk\",\n        \"quantity\": 2,\n        \"unitPrice\": 12000,\n        \"subtotal\": 24000,\n        \"notes\": null,\n        \"modifiers\": [],\n        \"variantName\": null\n      }\n    ],\n    \"subtotal\": 69000,\n    \"tax\": 6900,\n    \"total\": 75900,\n    \"status\": \"OPEN\",\n    \"notes\": \"Tamu VIP, layani dengan baik\",\n    \"createdAt\": \"2026-03-28T12:00:00Z\",\n    \"updatedAt\": \"2026-03-28T12:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add Items to Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"menuItemId\": \"item-003\",\n    \"menuItemName\": \"Soto Ayam\",\n    \"quantity\": 1,\n    \"unitPrice\": 30000,\n    \"notes\": \"Kuah banyak\",\n    \"modifiers\": [],\n    \"variantName\": null\n  }\n]"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/orders/order-001/items",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "orders", "order-001", "items"]
+            },
+            "description": "Adds new items to an existing order."
+          },
+          "response": [
+            {
+              "name": "200 - Items Added",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Items added\",\n  \"data\": {\n    \"id\": \"order-001\",\n    \"orderNumber\": \"ORD-20260328-001\",\n    \"tableId\": \"table-002\",\n    \"tableName\": \"T2\",\n    \"staffId\": \"staff-003\",\n    \"staffName\": \"Ahmad Wijaya\",\n    \"businessId\": \"biz-001\",\n    \"items\": [\n      {\n        \"id\": \"oi-001\",\n        \"menuItemId\": \"item-001\",\n        \"menuItemName\": \"Nasi Goreng Spesial\",\n        \"quantity\": 2,\n        \"unitPrice\": 35000,\n        \"subtotal\": 70000,\n        \"notes\": \"Pedas level 3\",\n        \"modifiers\": [\"Extra telur\"],\n        \"variantName\": null\n      },\n      {\n        \"id\": \"oi-002\",\n        \"menuItemId\": \"item-004\",\n        \"menuItemName\": \"Es Teh Manis\",\n        \"quantity\": 2,\n        \"unitPrice\": 8000,\n        \"subtotal\": 16000,\n        \"notes\": null,\n        \"modifiers\": [],\n        \"variantName\": null\n      },\n      {\n        \"id\": \"oi-005\",\n        \"menuItemId\": \"item-003\",\n        \"menuItemName\": \"Soto Ayam\",\n        \"quantity\": 1,\n        \"unitPrice\": 30000,\n        \"subtotal\": 30000,\n        \"notes\": \"Kuah banyak\",\n        \"modifiers\": [],\n        \"variantName\": null\n      }\n    ],\n    \"subtotal\": 116000,\n    \"tax\": 11600,\n    \"total\": 127600,\n    \"status\": \"OPEN\",\n    \"notes\": null,\n    \"createdAt\": \"2026-03-28T11:30:00Z\",\n    \"updatedAt\": \"2026-03-28T12:15:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Void Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Tamu membatalkan pesanan\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/orders/order-001/void",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "orders", "order-001", "void"]
+            },
+            "description": "Voids an order with a reason."
+          },
+          "response": [
+            {
+              "name": "200 - Order Voided",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Order voided\",\n  \"data\": {\n    \"id\": \"order-001\",\n    \"orderNumber\": \"ORD-20260328-001\",\n    \"tableId\": \"table-002\",\n    \"tableName\": \"T2\",\n    \"staffId\": \"staff-003\",\n    \"staffName\": \"Ahmad Wijaya\",\n    \"businessId\": \"biz-001\",\n    \"items\": [],\n    \"subtotal\": 0,\n    \"tax\": 0,\n    \"total\": 0,\n    \"status\": \"VOIDED\",\n    \"notes\": \"Tamu membatalkan pesanan\",\n    \"createdAt\": \"2026-03-28T11:30:00Z\",\n    \"updatedAt\": \"2026-03-28T12:30:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Orders by Table",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/orders/table/table-002",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "orders", "table", "table-002"]
+            },
+            "description": "Returns all orders for a specific table."
+          },
+          "response": [
+            {
+              "name": "200 - Orders by Table",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"order-001\",\n      \"orderNumber\": \"ORD-20260328-001\",\n      \"tableId\": \"table-002\",\n      \"tableName\": \"T2\",\n      \"staffId\": \"staff-003\",\n      \"staffName\": \"Ahmad Wijaya\",\n      \"businessId\": \"biz-001\",\n      \"items\": [\n        {\n          \"id\": \"oi-001\",\n          \"menuItemId\": \"item-001\",\n          \"menuItemName\": \"Nasi Goreng Spesial\",\n          \"quantity\": 2,\n          \"unitPrice\": 35000,\n          \"subtotal\": 70000,\n          \"notes\": \"Pedas level 3\",\n          \"modifiers\": [\"Extra telur\"],\n          \"variantName\": null\n        },\n        {\n          \"id\": \"oi-002\",\n          \"menuItemId\": \"item-004\",\n          \"menuItemName\": \"Es Teh Manis\",\n          \"quantity\": 2,\n          \"unitPrice\": 8000,\n          \"subtotal\": 16000,\n          \"notes\": null,\n          \"modifiers\": [],\n          \"variantName\": null\n        }\n      ],\n      \"subtotal\": 86000,\n      \"tax\": 8600,\n      \"total\": 94600,\n      \"status\": \"OPEN\",\n      \"notes\": null,\n      \"createdAt\": \"2026-03-28T11:30:00Z\",\n      \"updatedAt\": \"2026-03-28T11:30:00Z\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Payment Service",
+      "description": "Payment management endpoints (port 8087)",
+      "item": [
+        {
+          "name": "Payments",
+          "description": "Payment recording and retrieval",
+          "item": [
+            {
+              "name": "Record Payment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"orderId\": \"order-001\",\n  \"orderNumber\": \"ORD-20260328-001\",\n  \"amount\": 94600,\n  \"amountPaid\": 100000,\n  \"paymentMethodId\": \"pm-001\",\n  \"paymentMethodName\": \"Cash\",\n  \"staffId\": \"staff-003\",\n  \"businessId\": \"biz-001\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/api/payments",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "payments"]
+                },
+                "description": "Records a payment for an order."
+              },
+              "response": [
+                {
+                  "name": "201 - Payment Recorded",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Payment recorded\",\n  \"data\": {\n    \"id\": \"pay-001\",\n    \"orderId\": \"order-001\",\n    \"orderNumber\": \"ORD-20260328-001\",\n    \"amount\": 94600,\n    \"amountPaid\": 100000,\n    \"change\": 5400,\n    \"paymentMethodId\": \"pm-001\",\n    \"paymentMethodName\": \"Cash\",\n    \"staffId\": \"staff-003\",\n    \"businessId\": \"biz-001\",\n    \"status\": \"COMPLETED\",\n    \"paidAt\": \"2026-03-28T12:45:00Z\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Get Payment by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{gateway_url}}/api/payments/pay-001",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "payments", "pay-001"]
+                },
+                "description": "Returns a specific payment by ID."
+              },
+              "response": [
+                {
+                  "name": "200 - Payment Found",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"id\": \"pay-001\",\n    \"orderId\": \"order-001\",\n    \"orderNumber\": \"ORD-20260328-001\",\n    \"amount\": 94600,\n    \"amountPaid\": 100000,\n    \"change\": 5400,\n    \"paymentMethodId\": \"pm-001\",\n    \"paymentMethodName\": \"Cash\",\n    \"staffId\": \"staff-003\",\n    \"businessId\": \"biz-001\",\n    \"status\": \"COMPLETED\",\n    \"paidAt\": \"2026-03-28T12:45:00Z\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Get Payments by Order",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{gateway_url}}/api/payments/order/order-001",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "payments", "order", "order-001"]
+                },
+                "description": "Returns all payments for a specific order."
+              },
+              "response": [
+                {
+                  "name": "200 - Payments by Order",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"pay-001\",\n      \"orderId\": \"order-001\",\n      \"orderNumber\": \"ORD-20260328-001\",\n      \"amount\": 94600,\n      \"amountPaid\": 100000,\n      \"change\": 5400,\n      \"paymentMethodId\": \"pm-001\",\n      \"paymentMethodName\": \"Cash\",\n      \"staffId\": \"staff-003\",\n      \"businessId\": \"biz-001\",\n      \"status\": \"COMPLETED\",\n      \"paidAt\": \"2026-03-28T12:45:00Z\"\n    }\n  ]\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Payment Methods",
+          "description": "Payment method management",
+          "item": [
+            {
+              "name": "Get All Payment Methods",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{gateway_url}}/api/payments/methods?businessId=biz-001",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "payments", "methods"],
+                  "query": [
+                    { "key": "businessId", "value": "biz-001" }
+                  ]
+                },
+                "description": "Returns all payment methods for a business."
+              },
+              "response": [
+                {
+                  "name": "200 - Methods Retrieved",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"pm-001\",\n      \"name\": \"Cash\",\n      \"type\": \"CASH\",\n      \"active\": true,\n      \"businessId\": \"biz-001\"\n    },\n    {\n      \"id\": \"pm-002\",\n      \"name\": \"QRIS\",\n      \"type\": \"DIGITAL_WALLET\",\n      \"active\": true,\n      \"businessId\": \"biz-001\"\n    },\n    {\n      \"id\": \"pm-003\",\n      \"name\": \"Debit BCA\",\n      \"type\": \"DEBIT_CARD\",\n      \"active\": true,\n      \"businessId\": \"biz-001\"\n    }\n  ]\n}"
+                }
+              ]
+            },
+            {
+              "name": "Create Payment Method",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"GoPay\",\n  \"type\": \"DIGITAL_WALLET\",\n  \"active\": true,\n  \"businessId\": \"biz-001\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/api/payments/methods",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "payments", "methods"]
+                },
+                "description": "Creates a new payment method."
+              },
+              "response": [
+                {
+                  "name": "201 - Method Created",
+                  "status": "Created",
+                  "code": 201,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Payment method created\",\n  \"data\": {\n    \"id\": \"pm-004\",\n    \"name\": \"GoPay\",\n    \"type\": \"DIGITAL_WALLET\",\n    \"active\": true,\n    \"businessId\": \"biz-001\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Update Payment Method",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"GoPay / OVO\",\n  \"type\": \"DIGITAL_WALLET\",\n  \"active\": true,\n  \"businessId\": \"biz-001\"\n}"
+                },
+                "url": {
+                  "raw": "{{gateway_url}}/api/payments/methods/pm-004",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "payments", "methods", "pm-004"]
+                },
+                "description": "Updates a payment method."
+              },
+              "response": [
+                {
+                  "name": "200 - Method Updated",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Payment method updated\",\n  \"data\": {\n    \"id\": \"pm-004\",\n    \"name\": \"GoPay / OVO\",\n    \"type\": \"DIGITAL_WALLET\",\n    \"active\": true,\n    \"businessId\": \"biz-001\"\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Delete Payment Method",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{gateway_url}}/api/payments/methods/pm-004",
+                  "host": ["{{gateway_url}}"],
+                  "path": ["api", "payments", "methods", "pm-004"]
+                },
+                "description": "Deletes a payment method."
+              },
+              "response": [
+                {
+                  "name": "200 - Method Deleted",
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                  ],
+                  "body": "{\n  \"success\": true,\n  \"message\": \"Payment method deleted\",\n  \"data\": null\n}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Kitchen Service",
+      "description": "Kitchen display system endpoints (port 8088)",
+      "item": [
+        {
+          "name": "Get All Tickets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/kitchen/tickets",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "kitchen", "tickets"]
+            },
+            "description": "Returns all kitchen tickets."
+          },
+          "response": [
+            {
+              "name": "200 - Tickets Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"ticket-001\",\n      \"orderId\": \"order-001\",\n      \"orderNumber\": \"ORD-20260328-001\",\n      \"tableName\": \"T2\",\n      \"items\": [\n        {\n          \"menuItemName\": \"Nasi Goreng Spesial\",\n          \"quantity\": 2,\n          \"notes\": \"Pedas level 3\",\n          \"modifiers\": [\"Extra telur\"]\n        },\n        {\n          \"menuItemName\": \"Soto Ayam\",\n          \"quantity\": 1,\n          \"notes\": \"Kuah banyak\",\n          \"modifiers\": []\n        }\n      ],\n      \"status\": \"PENDING\",\n      \"priority\": \"NORMAL\",\n      \"createdAt\": \"2026-03-28T11:30:00Z\",\n      \"updatedAt\": \"2026-03-28T11:30:00Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Ticket by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/kitchen/tickets/ticket-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "kitchen", "tickets", "ticket-001"]
+            },
+            "description": "Returns a specific kitchen ticket by ID."
+          },
+          "response": [
+            {
+              "name": "200 - Ticket Found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"id\": \"ticket-001\",\n    \"orderId\": \"order-001\",\n    \"orderNumber\": \"ORD-20260328-001\",\n    \"tableName\": \"T2\",\n    \"items\": [\n      {\n        \"menuItemName\": \"Nasi Goreng Spesial\",\n        \"quantity\": 2,\n        \"notes\": \"Pedas level 3\",\n        \"modifiers\": [\"Extra telur\"]\n      }\n    ],\n    \"status\": \"PENDING\",\n    \"priority\": \"NORMAL\",\n    \"createdAt\": \"2026-03-28T11:30:00Z\",\n    \"updatedAt\": \"2026-03-28T11:30:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Ticket Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/kitchen/tickets/ticket-001/status",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "kitchen", "tickets", "ticket-001", "status"]
+            },
+            "description": "Updates the status of a kitchen ticket (PENDING, IN_PROGRESS, READY, SERVED)."
+          },
+          "response": [
+            {
+              "name": "200 - Status Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Status updated\",\n  \"data\": {\n    \"id\": \"ticket-001\",\n    \"orderId\": \"order-001\",\n    \"orderNumber\": \"ORD-20260328-001\",\n    \"tableName\": \"T2\",\n    \"items\": [\n      {\n        \"menuItemName\": \"Nasi Goreng Spesial\",\n        \"quantity\": 2,\n        \"notes\": \"Pedas level 3\",\n        \"modifiers\": [\"Extra telur\"]\n      }\n    ],\n    \"status\": \"IN_PROGRESS\",\n    \"priority\": \"NORMAL\",\n    \"createdAt\": \"2026-03-28T11:30:00Z\",\n    \"updatedAt\": \"2026-03-28T11:45:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reprint Ticket",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/kitchen/tickets/ticket-001/reprint",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "kitchen", "tickets", "ticket-001", "reprint"]
+            },
+            "description": "Reprints a kitchen ticket."
+          },
+          "response": [
+            {
+              "name": "200 - Ticket Reprinted",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Ticket reprinted\",\n  \"data\": {\n    \"id\": \"ticket-001\",\n    \"orderId\": \"order-001\",\n    \"orderNumber\": \"ORD-20260328-001\",\n    \"tableName\": \"T2\",\n    \"items\": [\n      {\n        \"menuItemName\": \"Nasi Goreng Spesial\",\n        \"quantity\": 2,\n        \"notes\": \"Pedas level 3\",\n        \"modifiers\": [\"Extra telur\"]\n      }\n    ],\n    \"status\": \"IN_PROGRESS\",\n    \"priority\": \"NORMAL\",\n    \"createdAt\": \"2026-03-28T11:30:00Z\",\n    \"updatedAt\": \"2026-03-28T11:45:00Z\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notification Service",
+      "description": "Notification management endpoints (port 8089)",
+      "item": [
+        {
+          "name": "Get All Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/notifications",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "notifications"]
+            },
+            "description": "Returns all notifications."
+          },
+          "response": [
+            {
+              "name": "200 - Notifications Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"notif-001\",\n      \"type\": \"ORDER_READY\",\n      \"title\": \"Pesanan Siap\",\n      \"message\": \"Pesanan ORD-20260328-001 untuk meja T2 sudah siap disajikan\",\n      \"targetStaffId\": \"staff-003\",\n      \"businessId\": \"biz-001\",\n      \"read\": false,\n      \"createdAt\": \"2026-03-28T12:00:00Z\"\n    },\n    {\n      \"id\": \"notif-002\",\n      \"type\": \"LOW_STOCK\",\n      \"title\": \"Stok Menipis\",\n      \"message\": \"Stok Ayam Bakar Madu tinggal 5 porsi\",\n      \"targetStaffId\": \"staff-001\",\n      \"businessId\": \"biz-001\",\n      \"read\": false,\n      \"createdAt\": \"2026-03-28T11:00:00Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Send Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"ORDER_READY\",\n  \"title\": \"Pesanan Siap\",\n  \"message\": \"Pesanan ORD-20260328-002 untuk meja T1 sudah siap disajikan\",\n  \"targetStaffId\": \"staff-003\",\n  \"businessId\": \"biz-001\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/notifications/send",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "notifications", "send"]
+            },
+            "description": "Sends a new notification to a staff member."
+          },
+          "response": [
+            {
+              "name": "201 - Notification Sent",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Notification sent\",\n  \"data\": {\n    \"id\": \"notif-003\",\n    \"type\": \"ORDER_READY\",\n    \"title\": \"Pesanan Siap\",\n    \"message\": \"Pesanan ORD-20260328-002 untuk meja T1 sudah siap disajikan\",\n    \"targetStaffId\": \"staff-003\",\n    \"businessId\": \"biz-001\",\n    \"read\": false,\n    \"createdAt\": \"2026-03-28T12:30:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark as Read",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/notifications/notif-001/read",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "notifications", "notif-001", "read"]
+            },
+            "description": "Marks a notification as read."
+          },
+          "response": [
+            {
+              "name": "200 - Marked as Read",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Marked as read\",\n  \"data\": {\n    \"id\": \"notif-001\",\n    \"type\": \"ORDER_READY\",\n    \"title\": \"Pesanan Siap\",\n    \"message\": \"Pesanan ORD-20260328-001 untuk meja T2 sudah siap disajikan\",\n    \"targetStaffId\": \"staff-003\",\n    \"businessId\": \"biz-001\",\n    \"read\": true,\n    \"createdAt\": \"2026-03-28T12:00:00Z\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AI Image Service",
+      "description": "AI image generation endpoints (port 8090)",
+      "item": [
+        {
+          "name": "Generate Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prompt\": \"Professional food photo of Nasi Goreng Spesial, Indonesian fried rice with egg, chicken, and vegetables, served on a white plate, restaurant quality\",\n  \"menuItemId\": \"item-001\",\n  \"menuItemName\": \"Nasi Goreng Spesial\",\n  \"businessId\": \"biz-001\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/images/generate",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "images", "generate"]
+            },
+            "description": "Generates an AI image for a menu item. Returns a job that can be polled for completion."
+          },
+          "response": [
+            {
+              "name": "201 - Job Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Image generation job created\",\n  \"data\": {\n    \"id\": \"img-job-001\",\n    \"menuItemId\": \"item-001\",\n    \"menuItemName\": \"Nasi Goreng Spesial\",\n    \"prompt\": \"Professional food photo of Nasi Goreng Spesial, Indonesian fried rice with egg, chicken, and vegetables, served on a white plate, restaurant quality\",\n    \"status\": \"PENDING\",\n    \"imageUrl\": null,\n    \"businessId\": \"biz-001\",\n    \"createdAt\": \"2026-03-28T13:00:00Z\",\n    \"completedAt\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Job by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/images/jobs/img-job-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "images", "jobs", "img-job-001"]
+            },
+            "description": "Returns the status of an image generation job."
+          },
+          "response": [
+            {
+              "name": "200 - Job Found (Completed)",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"id\": \"img-job-001\",\n    \"menuItemId\": \"item-001\",\n    \"menuItemName\": \"Nasi Goreng Spesial\",\n    \"prompt\": \"Professional food photo of Nasi Goreng Spesial\",\n    \"status\": \"COMPLETED\",\n    \"imageUrl\": \"https://storage.bukukasir.com/images/nasi-goreng-spesial-001.jpg\",\n    \"businessId\": \"biz-001\",\n    \"createdAt\": \"2026-03-28T13:00:00Z\",\n    \"completedAt\": \"2026-03-28T13:00:15Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Jobs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/images/jobs",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "images", "jobs"]
+            },
+            "description": "Returns all image generation jobs."
+          },
+          "response": [
+            {
+              "name": "200 - Jobs Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"img-job-001\",\n      \"menuItemId\": \"item-001\",\n      \"menuItemName\": \"Nasi Goreng Spesial\",\n      \"prompt\": \"Professional food photo of Nasi Goreng Spesial\",\n      \"status\": \"COMPLETED\",\n      \"imageUrl\": \"https://storage.bukukasir.com/images/nasi-goreng-spesial-001.jpg\",\n      \"businessId\": \"biz-001\",\n      \"createdAt\": \"2026-03-28T13:00:00Z\",\n      \"completedAt\": \"2026-03-28T13:00:15Z\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Report Service",
+      "description": "Reporting and analytics endpoints (port 8091)",
+      "item": [
+        {
+          "name": "Get Daily Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/reports/daily-summary?date=2026-03-28",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "reports", "daily-summary"],
+              "query": [
+                { "key": "date", "value": "2026-03-28" }
+              ]
+            },
+            "description": "Returns the daily summary for a given date."
+          },
+          "response": [
+            {
+              "name": "200 - Daily Summary",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"date\": \"2026-03-28\",\n    \"totalOrders\": 47,\n    \"totalRevenue\": 8750000,\n    \"averageOrderValue\": 186170,\n    \"totalItemsSold\": 156,\n    \"cancelledOrders\": 2,\n    \"peakHour\": \"12:00-13:00\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Sales Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/reports/sales?period=today",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "reports", "sales"],
+              "query": [
+                { "key": "period", "value": "today" }
+              ]
+            },
+            "description": "Returns a sales report for the given period (today, week, month)."
+          },
+          "response": [
+            {
+              "name": "200 - Sales Report",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"period\": \"today\",\n    \"startDate\": \"2026-03-28\",\n    \"endDate\": \"2026-03-28\",\n    \"grossSales\": 9500000,\n    \"discounts\": 250000,\n    \"tax\": 925000,\n    \"netSales\": 8750000,\n    \"orderCount\": 47\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Payment Method Breakdown",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/reports/payment-methods",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "reports", "payment-methods"]
+            },
+            "description": "Returns payment method breakdown for the current period."
+          },
+          "response": [
+            {
+              "name": "200 - Payment Breakdown",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"methodName\": \"Cash\",\n      \"totalAmount\": 5250000,\n      \"transactionCount\": 28,\n      \"percentage\": 60.0\n    },\n    {\n      \"methodName\": \"QRIS\",\n      \"totalAmount\": 2625000,\n      \"transactionCount\": 14,\n      \"percentage\": 30.0\n    },\n    {\n      \"methodName\": \"Debit BCA\",\n      \"totalAmount\": 875000,\n      \"transactionCount\": 5,\n      \"percentage\": 10.0\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Top Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/reports/top-items?limit=5",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "reports", "top-items"],
+              "query": [
+                { "key": "limit", "value": "5" }
+              ]
+            },
+            "description": "Returns the top selling menu items."
+          },
+          "response": [
+            {
+              "name": "200 - Top Items",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"menuItemId\": \"item-001\",\n      \"menuItemName\": \"Nasi Goreng Spesial\",\n      \"quantitySold\": 42,\n      \"totalRevenue\": 1470000\n    },\n    {\n      \"menuItemId\": \"item-004\",\n      \"menuItemName\": \"Es Teh Manis\",\n      \"quantitySold\": 38,\n      \"totalRevenue\": 304000\n    },\n    {\n      \"menuItemId\": \"item-002\",\n      \"menuItemName\": \"Ayam Bakar Madu\",\n      \"quantitySold\": 28,\n      \"totalRevenue\": 1260000\n    },\n    {\n      \"menuItemId\": \"item-003\",\n      \"menuItemName\": \"Soto Ayam\",\n      \"quantitySold\": 25,\n      \"totalRevenue\": 750000\n    },\n    {\n      \"menuItemId\": \"item-005\",\n      \"menuItemName\": \"Es Jeruk\",\n      \"quantitySold\": 23,\n      \"totalRevenue\": 276000\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Staff Performance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/reports/staff-performance",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "reports", "staff-performance"]
+            },
+            "description": "Returns staff performance metrics."
+          },
+          "response": [
+            {
+              "name": "200 - Staff Performance",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"staffId\": \"staff-003\",\n      \"staffName\": \"Ahmad Wijaya\",\n      \"ordersProcessed\": 25,\n      \"totalSales\": 4500000,\n      \"averageOrderTime\": \"8 min\"\n    },\n    {\n      \"staffId\": \"staff-002\",\n      \"staffName\": \"Siti Rahayu\",\n      \"ordersProcessed\": 22,\n      \"totalSales\": 4250000,\n      \"averageOrderTime\": \"7 min\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Receipt Service",
+      "description": "Receipt and printing endpoints (port 8092)",
+      "item": [
+        {
+          "name": "Get Template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/receipts/template?businessId=biz-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "receipts", "template"],
+              "query": [
+                { "key": "businessId", "value": "biz-001" }
+              ]
+            },
+            "description": "Returns the receipt template for a business."
+          },
+          "response": [
+            {
+              "name": "200 - Template Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"id\": \"tpl-001\",\n    \"businessId\": \"biz-001\",\n    \"headerText\": \"Warung Nusantara\\nJl. Sudirman No. 123\\nJakarta Selatan\",\n    \"footerText\": \"Terima kasih atas kunjungan Anda!\\nSilakan datang kembali.\",\n    \"showLogo\": true,\n    \"showAddress\": true,\n    \"showTaxDetails\": true,\n    \"paperWidth\": \"80mm\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Template",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"tpl-001\",\n  \"businessId\": \"biz-001\",\n  \"headerText\": \"Warung Nusantara\\nJl. Sudirman No. 123\\nJakarta Selatan\\nTelp: +62-21-5551234\",\n  \"footerText\": \"Terima kasih atas kunjungan Anda!\\nFollow kami @warungnusantara\",\n  \"showLogo\": true,\n  \"showAddress\": true,\n  \"showTaxDetails\": true,\n  \"paperWidth\": \"80mm\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/receipts/template",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "receipts", "template"]
+            },
+            "description": "Updates the receipt template for a business."
+          },
+          "response": [
+            {
+              "name": "200 - Template Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Template updated\",\n  \"data\": {\n    \"id\": \"tpl-001\",\n    \"businessId\": \"biz-001\",\n    \"headerText\": \"Warung Nusantara\\nJl. Sudirman No. 123\\nJakarta Selatan\\nTelp: +62-21-5551234\",\n    \"footerText\": \"Terima kasih atas kunjungan Anda!\\nFollow kami @warungnusantara\",\n    \"showLogo\": true,\n    \"showAddress\": true,\n    \"showTaxDetails\": true,\n    \"paperWidth\": \"80mm\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Print Receipt",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"order-001\",\n  \"orderNumber\": \"ORD-20260328-001\",\n  \"businessId\": \"biz-001\"\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/receipts/print",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "receipts", "print"]
+            },
+            "description": "Queues a receipt for printing."
+          },
+          "response": [
+            {
+              "name": "201 - Print Job Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Print job created\",\n  \"data\": {\n    \"id\": \"print-001\",\n    \"orderId\": \"order-001\",\n    \"orderNumber\": \"ORD-20260328-001\",\n    \"businessId\": \"biz-001\",\n    \"status\": \"QUEUED\",\n    \"createdAt\": \"2026-03-28T13:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Print Queue",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/receipts/print-queue",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "receipts", "print-queue"]
+            },
+            "description": "Returns the current print queue."
+          },
+          "response": [
+            {
+              "name": "200 - Print Queue",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"print-001\",\n      \"orderId\": \"order-001\",\n      \"orderNumber\": \"ORD-20260328-001\",\n      \"businessId\": \"biz-001\",\n      \"status\": \"QUEUED\",\n      \"createdAt\": \"2026-03-28T13:00:00Z\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "File Storage Service",
+      "description": "File upload and management endpoints (port 8093)",
+      "item": [
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/files/upload?originalName=nasi-goreng.jpg&contentType=image/jpeg&fileSize=245000&fileType=MENU_IMAGE&businessId=biz-001&entityId=item-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "files", "upload"],
+              "query": [
+                { "key": "originalName", "value": "nasi-goreng.jpg" },
+                { "key": "contentType", "value": "image/jpeg" },
+                { "key": "fileSize", "value": "245000" },
+                { "key": "fileType", "value": "MENU_IMAGE" },
+                { "key": "businessId", "value": "biz-001" },
+                { "key": "entityId", "value": "item-001" }
+              ]
+            },
+            "description": "Uploads a file (metadata only in mock mode). File types: THUMBNAIL, MENU_IMAGE, LOGO, RECEIPT."
+          },
+          "response": [
+            {
+              "name": "201 - File Uploaded",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"File uploaded\",\n  \"data\": {\n    \"id\": \"file-001\",\n    \"originalName\": \"nasi-goreng.jpg\",\n    \"storedName\": \"biz-001/menu/nasi-goreng-abc123.jpg\",\n    \"contentType\": \"image/jpeg\",\n    \"fileSize\": 245000,\n    \"fileType\": \"MENU_IMAGE\",\n    \"url\": \"https://storage.bukukasir.com/biz-001/menu/nasi-goreng-abc123.jpg\",\n    \"businessId\": \"biz-001\",\n    \"entityId\": \"item-001\",\n    \"uploadedAt\": \"2026-03-28T13:30:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get File by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/files/file-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "files", "file-001"]
+            },
+            "description": "Returns file metadata by ID."
+          },
+          "response": [
+            {
+              "name": "200 - File Found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"id\": \"file-001\",\n    \"originalName\": \"nasi-goreng.jpg\",\n    \"storedName\": \"biz-001/menu/nasi-goreng-abc123.jpg\",\n    \"contentType\": \"image/jpeg\",\n    \"fileSize\": 245000,\n    \"fileType\": \"MENU_IMAGE\",\n    \"url\": \"https://storage.bukukasir.com/biz-001/menu/nasi-goreng-abc123.jpg\",\n    \"businessId\": \"biz-001\",\n    \"entityId\": \"item-001\",\n    \"uploadedAt\": \"2026-03-28T13:30:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete File",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/files/file-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "files", "file-001"]
+            },
+            "description": "Deletes a file."
+          },
+          "response": [
+            {
+              "name": "200 - File Deleted",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"File deleted\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Files by Business",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/files/business/biz-001",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "files", "business", "biz-001"]
+            },
+            "description": "Returns all files for a business."
+          },
+          "response": [
+            {
+              "name": "200 - Files Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": [\n    {\n      \"id\": \"file-001\",\n      \"originalName\": \"nasi-goreng.jpg\",\n      \"storedName\": \"biz-001/menu/nasi-goreng-abc123.jpg\",\n      \"contentType\": \"image/jpeg\",\n      \"fileSize\": 245000,\n      \"fileType\": \"MENU_IMAGE\",\n      \"url\": \"https://storage.bukukasir.com/biz-001/menu/nasi-goreng-abc123.jpg\",\n      \"businessId\": \"biz-001\",\n      \"entityId\": \"item-001\",\n      \"uploadedAt\": \"2026-03-28T13:30:00Z\"\n    },\n    {\n      \"id\": \"file-002\",\n      \"originalName\": \"logo-warung.png\",\n      \"storedName\": \"biz-001/logo/logo-warung-def456.png\",\n      \"contentType\": \"image/png\",\n      \"fileSize\": 85000,\n      \"fileType\": \"LOGO\",\n      \"url\": \"https://storage.bukukasir.com/biz-001/logo/logo-warung-def456.png\",\n      \"businessId\": \"biz-001\",\n      \"entityId\": \"biz-001\",\n      \"uploadedAt\": \"2026-03-28T10:00:00Z\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Realtime Gateway",
+      "description": "Realtime gateway status endpoints (port 8094)",
+      "item": [
+        {
+          "name": "Get Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway_url}}/api/realtime/status",
+              "host": ["{{gateway_url}}"],
+              "path": ["api", "realtime", "status"]
+            },
+            "description": "Returns the current status of the realtime gateway including WebSocket endpoint and connected clients."
+          },
+          "response": [
+            {
+              "name": "200 - Status Retrieved",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": null,\n  \"data\": {\n    \"status\": \"running\",\n    \"websocketEndpoint\": \"/ws\",\n    \"connectedClients\": 0,\n    \"uptime\": \"2026-03-28T08:00:00Z\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

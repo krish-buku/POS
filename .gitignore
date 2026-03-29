@@ -1,0 +1,8 @@
+node_modules/
+build/
+.gradle/
+*.class
+*.jar
+.env
+test-results/
+playwright-report/

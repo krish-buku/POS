@@ -1,0 +1,33 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "npx playwright test",
+    "test:auth": "npx playwright test auth-service",
+    "test:business": "npx playwright test business-service",
+    "test:staff": "npx playwright test staff-service",
+    "test:menu": "npx playwright test menu-service",
+    "test:table": "npx playwright test table-service",
+    "test:order": "npx playwright test order-service",
+    "test:payment": "npx playwright test payment-service",
+    "test:kitchen": "npx playwright test kitchen-service",
+    "test:report": "npx playwright test report-service",
+    "test:receipt": "npx playwright test receipt-service",
+    "test:file": "npx playwright test file-storage-service",
+    "test:notification": "npx playwright test notification-service",
+    "test:image": "npx playwright test ai-image-service",
+    "test:report-html": "npx playwright test --reporter=html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "typescript": "^6.0.2"
+  }
+}

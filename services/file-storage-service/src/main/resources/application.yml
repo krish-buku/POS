@@ -1,0 +1,23 @@
+server:
+  port: 8093
+spring:
+  application:
+    name: file-storage-service
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+springdoc:
+  api-docs:
+    path: /api/files/v3/api-docs
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
