@@ -33,6 +33,11 @@ spring:
           predicates:
             - Path=/api/businesses/**
 
+        - id: customer-service
+          uri: lb://user-business-service
+          predicates:
+            - Path=/api/customers/**
+
         - id: staff-service
           uri: lb://staff-service
           predicates:
@@ -87,6 +92,11 @@ spring:
           uri: lb://file-storage-service
           predicates:
             - Path=/api/files/**
+
+        - id: shift-service
+          uri: lb://shift-service
+          predicates:
+            - Path=/api/shifts/**
 
         - id: realtime-gateway
           uri: lb://realtime-gateway

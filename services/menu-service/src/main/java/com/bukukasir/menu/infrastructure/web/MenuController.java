@@ -1,5 +1,7 @@
 package com.bukukasir.menu.infrastructure.web;
 
+import com.bukukasir.common.audit.AuditLogDTO;
+import com.bukukasir.common.audit.AuditLogger;
 import com.bukukasir.common.dto.ApiResponse;
 import com.bukukasir.menu.application.dto.*;
 import com.bukukasir.menu.application.mapper.MenuMapper;
@@ -11,10 +13,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +30,7 @@ public class MenuController {
 
     private final MenuUseCase menuUseCase;
     private final MenuMapper menuMapper;
+    private final AuditLogger auditLogger;
 
     // --- Categories ---
 
@@ -121,5 +126,20 @@ public class MenuController {
         boolean available = body.getOrDefault("available", true);
         MenuItem updated = menuUseCase.updateAvailability(id, available);
         return ResponseEntity.ok(ApiResponse.success(menuMapper.toResponse(updated), "Availability updated"));
+    }
+
+    @GetMapping("/audit")
+    @Operation(summary = "Query menu audit logs", description = "Returns audit trail for menu-related actions")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Audit logs retrieved")
+    })
+    public ResponseEntity<ApiResponse<List<AuditLogDTO>>> getAuditLogs(
+            @RequestParam(required = false) String businessId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @RequestParam(defaultValue = "50") int limit) {
+        List<AuditLogDTO> logs = auditLogger.query(businessId, null, null, from, to, limit)
+                .stream().map(AuditLogDTO::from).toList();
+        return ResponseEntity.ok(ApiResponse.success(logs, "Audit logs retrieved"));
     }
 }

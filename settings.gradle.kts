@@ -18,5 +18,6 @@ include(
     "services:report-service",
     "services:receipt-service",
     "services:realtime-gateway",
-    "services:file-storage-service"
+    "services:file-storage-service",
+    "services:shift-service"
 )

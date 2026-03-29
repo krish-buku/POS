@@ -1,26 +1,34 @@
 package com.bukukasir.order.domain.service;
 
+import com.bukukasir.common.audit.AuditAction;
+import com.bukukasir.common.audit.AuditLog;
+import com.bukukasir.common.audit.AuditLogger;
 import com.bukukasir.common.exception.BusinessException;
 import com.bukukasir.common.exception.ResourceNotFoundException;
 import com.bukukasir.common.util.IdGenerator;
-import com.bukukasir.order.domain.model.Order;
-import com.bukukasir.order.domain.model.OrderItem;
-import com.bukukasir.order.domain.model.OrderStatus;
+import com.bukukasir.order.domain.model.*;
 import com.bukukasir.order.domain.port.in.OrderUseCase;
 import com.bukukasir.order.domain.port.out.OrderRepository;
+import com.bukukasir.order.domain.port.out.TaxConfigRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class OrderDomainService implements OrderUseCase {
 
     private final OrderRepository orderRepository;
+    private final TaxConfigRepository taxConfigRepository;
+    private final TaxCalculator taxCalculator;
+    private final AuditLogger auditLogger;
 
     @Override
     public Order createOrder(Order order) {
@@ -30,7 +38,19 @@ public class OrderDomainService implements OrderUseCase {
         order.setCreatedAt(Instant.now());
         order.setUpdatedAt(Instant.now());
         recalculateTotal(order);
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        auditLogger.log(AuditLog.builder()
+                .actorId("staff-001").actorName("System")
+                .businessId(saved.getBusinessId())
+                .action(AuditAction.CREATE)
+                .entityType("Order").entityId(saved.getId())
+                .description("Created order " + saved.getOrderNumber() + " for table " + saved.getTableName())
+                .newValues(orderToMap(saved))
+                .timestamp(LocalDateTime.now())
+                .build());
+
+        return saved;
     }
 
     @Override
@@ -69,10 +89,29 @@ public class OrderDomainService implements OrderUseCase {
         if (order.getStatus() == OrderStatus.VOIDED) {
             throw new BusinessException("ORDER_ALREADY_VOIDED", "Order sudah divoid");
         }
+        Map<String, Object> oldValues = orderToMap(order);
+
         order.setStatus(OrderStatus.VOIDED);
         order.setNotes(reason);
         order.setUpdatedAt(Instant.now());
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        Map<String, Object> newValues = new LinkedHashMap<>();
+        newValues.put("status", "VOIDED");
+        newValues.put("voidReason", reason);
+
+        auditLogger.log(AuditLog.builder()
+                .actorId("staff-001").actorName("System")
+                .businessId(saved.getBusinessId())
+                .action(AuditAction.VOID)
+                .entityType("Order").entityId(saved.getId())
+                .description("Voided order " + saved.getOrderNumber() + " - reason: " + reason)
+                .oldValues(oldValues)
+                .newValues(newValues)
+                .timestamp(LocalDateTime.now())
+                .build());
+
+        return saved;
     }
 
     private void recalculateTotal(Order order) {
@@ -80,14 +119,50 @@ public class OrderDomainService implements OrderUseCase {
             order.setSubtotal(BigDecimal.ZERO);
             order.setTax(BigDecimal.ZERO);
             order.setTotal(BigDecimal.ZERO);
+            order.setTaxBreakdown(List.of());
             return;
         }
         BigDecimal subtotal = order.getItems().stream()
                 .map(OrderItem::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal tax = subtotal.multiply(new BigDecimal("0.11")); // PPN 11%
         order.setSubtotal(subtotal);
-        order.setTax(tax);
-        order.setTotal(subtotal.add(tax));
+
+        // Use TaxCalculator with business's active tax configs
+        String businessId = order.getBusinessId();
+        List<TaxConfig> activeTaxes = (businessId != null)
+                ? taxConfigRepository.findActiveByBusinessId(businessId)
+                : List.of();
+
+        if (activeTaxes.isEmpty()) {
+            // Fallback to hardcoded PPN 11% if no tax configs found
+            BigDecimal tax = subtotal.multiply(new BigDecimal("0.11"));
+            order.setTax(tax);
+            order.setTotal(subtotal.add(tax));
+            order.setTaxBreakdown(List.of());
+        } else {
+            List<TaxCalculation> taxBreakdown = taxCalculator.calculateTaxes(subtotal, activeTaxes);
+            order.setTaxBreakdown(taxBreakdown);
+
+            // Sum up all exclusive taxes for the total
+            BigDecimal totalTax = taxBreakdown.stream()
+                    .filter(tc -> !tc.isInclusive())
+                    .map(TaxCalculation::getTaxAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            order.setTax(totalTax);
+            order.setTotal(subtotal.add(totalTax));
+        }
+    }
+
+    private Map<String, Object> orderToMap(Order order) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("orderNumber", order.getOrderNumber());
+        map.put("tableId", order.getTableId());
+        map.put("tableName", order.getTableName());
+        map.put("status", order.getStatus() != null ? order.getStatus().name() : null);
+        map.put("subtotal", order.getSubtotal());
+        map.put("tax", order.getTax());
+        map.put("total", order.getTotal());
+        map.put("itemCount", order.getItems() != null ? order.getItems().size() : 0);
+        return map;
     }
 }

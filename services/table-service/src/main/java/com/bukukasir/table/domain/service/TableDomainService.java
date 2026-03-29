@@ -1,5 +1,8 @@
 package com.bukukasir.table.domain.service;
 
+import com.bukukasir.common.audit.AuditAction;
+import com.bukukasir.common.audit.AuditLog;
+import com.bukukasir.common.audit.AuditLogger;
 import com.bukukasir.common.exception.BusinessException;
 import com.bukukasir.common.exception.ResourceNotFoundException;
 import com.bukukasir.common.util.IdGenerator;
@@ -10,13 +13,17 @@ import com.bukukasir.table.domain.port.out.TableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class TableDomainService implements TableUseCase {
 
     private final TableRepository tableRepository;
+    private final AuditLogger auditLogger;
 
     @Override
     public List<RestaurantTable> getAllTables(String businessId) { return tableRepository.findAll(); }
@@ -49,9 +56,29 @@ public class TableDomainService implements TableUseCase {
     @Override
     public RestaurantTable updateStatus(String id, TableStatus status) {
         RestaurantTable table = getTableById(id);
+        TableStatus oldStatus = table.getStatus();
+
         table.setStatus(status);
         if (status == TableStatus.AVAILABLE) { table.setCurrentOrderId(null); }
-        return tableRepository.save(table);
+        RestaurantTable saved = tableRepository.save(table);
+
+        Map<String, Object> oldValues = new LinkedHashMap<>();
+        oldValues.put("status", oldStatus != null ? oldStatus.name() : null);
+        Map<String, Object> newValues = new LinkedHashMap<>();
+        newValues.put("status", status.name());
+
+        auditLogger.log(AuditLog.builder()
+                .actorId("staff-001").actorName("System")
+                .businessId(saved.getBusinessId())
+                .action(AuditAction.STATUS_CHANGE)
+                .entityType("Table").entityId(saved.getId())
+                .description("Changed table " + saved.getName() + " status from " + oldStatus + " to " + status)
+                .oldValues(oldValues)
+                .newValues(newValues)
+                .timestamp(LocalDateTime.now())
+                .build());
+
+        return saved;
     }
 
     @Override
@@ -67,6 +94,24 @@ public class TableDomainService implements TableUseCase {
         from.setCurrentOrderId(null);
         tableRepository.save(from);
         tableRepository.save(to);
+
+        Map<String, Object> oldValues = new LinkedHashMap<>();
+        oldValues.put("fromTable", from.getName());
+        oldValues.put("fromTableId", fromTableId);
+        Map<String, Object> newValues = new LinkedHashMap<>();
+        newValues.put("toTable", to.getName());
+        newValues.put("toTableId", toTableId);
+
+        auditLogger.log(AuditLog.builder()
+                .actorId("staff-001").actorName("System")
+                .businessId(from.getBusinessId())
+                .action(AuditAction.TRANSFER)
+                .entityType("Table").entityId(fromTableId)
+                .description("Transferred order from table " + from.getName() + " to table " + to.getName())
+                .oldValues(oldValues)
+                .newValues(newValues)
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @Override

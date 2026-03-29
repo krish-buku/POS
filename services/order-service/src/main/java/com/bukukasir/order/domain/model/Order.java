@@ -25,6 +25,7 @@ public class Order {
     private BigDecimal subtotal;
     private BigDecimal tax;
     private BigDecimal total;
+    private List<TaxCalculation> taxBreakdown;
     private OrderStatus status;
     private String notes;
     private Instant createdAt;

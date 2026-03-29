@@ -26,5 +26,6 @@ public class Payment {
     private String staffId;
     private String businessId;
     private List<PaymentSplit> splits;
+    private List<TransactionLine> ledgerLines;
     private Instant createdAt;
 }

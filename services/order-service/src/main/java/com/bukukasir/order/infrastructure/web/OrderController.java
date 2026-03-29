@@ -1,5 +1,7 @@
 package com.bukukasir.order.infrastructure.web;
 
+import com.bukukasir.common.audit.AuditLogDTO;
+import com.bukukasir.common.audit.AuditLogger;
 import com.bukukasir.common.dto.ApiResponse;
 import com.bukukasir.order.application.dto.*;
 import com.bukukasir.order.application.mapper.OrderMapper;
@@ -10,10 +12,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +29,7 @@ public class OrderController {
 
     private final OrderUseCase orderUseCase;
     private final OrderMapper orderMapper;
+    private final AuditLogger auditLogger;
 
     @PostMapping
     @Operation(summary = "Create a new order")
@@ -71,5 +76,20 @@ public class OrderController {
         String reason = body.getOrDefault("reason", "No reason provided");
         Order voided = orderUseCase.voidOrder(id, reason);
         return ResponseEntity.ok(ApiResponse.success(orderMapper.toResponse(voided), "Order voided"));
+    }
+
+    @GetMapping("/audit")
+    @Operation(summary = "Query order audit logs", description = "Returns audit trail for order-related actions")
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Audit logs retrieved")
+    })
+    public ResponseEntity<ApiResponse<List<AuditLogDTO>>> getAuditLogs(
+            @RequestParam(required = false) String businessId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @RequestParam(defaultValue = "50") int limit) {
+        List<AuditLogDTO> logs = auditLogger.query(businessId, "Order", null, from, to, limit)
+                .stream().map(AuditLogDTO::from).toList();
+        return ResponseEntity.ok(ApiResponse.success(logs, "Audit logs retrieved"));
     }
 }
