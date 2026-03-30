@@ -1,3 +1,7 @@
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
+}
+
 rootProject.name = "bukukasir-backend"
 
 include(
@@ -19,5 +23,6 @@ include(
     "services:receipt-service",
     "services:realtime-gateway",
     "services:file-storage-service",
-    "services:shift-service"
+    "services:shift-service",
+    "services:bukukasir-api"
 )
