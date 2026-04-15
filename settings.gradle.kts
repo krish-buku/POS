@@ -3,6 +3,7 @@ plugins {
 }
 
 rootProject.name = "bukukasir-backend"
+// BukuKasir Backend
 
 include(
     "shared:common",
