@@ -10,7 +10,7 @@ public class TableMapper {
     public TableResponse toResponse(RestaurantTable t) {
         return new TableResponse(t.getId(), t.getName(), t.getCapacity(),
                 t.getStatus().name(), t.getAreaId(), t.getFloorId(),
-                t.getBusinessId(), t.getCurrentOrderId());
+                t.getBusinessId(), t.getCurrentOrderId(), t.getAssignedStaffId());
     }
     public RestaurantTable toDomain(TableRequest r) {
         return RestaurantTable.builder().name(r.name()).capacity(r.capacity())

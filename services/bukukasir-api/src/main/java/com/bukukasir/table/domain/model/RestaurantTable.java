@@ -18,4 +18,5 @@ public class RestaurantTable {
     private String floorId;
     private String businessId;
     private String currentOrderId;
+    private String assignedStaffId;
 }

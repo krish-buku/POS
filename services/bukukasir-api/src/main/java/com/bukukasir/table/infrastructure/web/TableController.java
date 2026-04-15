@@ -76,6 +76,14 @@ public class TableController {
         return ResponseEntity.ok(ApiResponse.success(tableMapper.toResponse(tableUseCase.updateStatus(id, status)), "Status updated"));
     }
 
+    @PutMapping("/{id}/assign")
+    @Operation(summary = "Assign table to a staff member")
+    public ResponseEntity<ApiResponse<TableResponse>> assignStaff(
+            @PathVariable String id, @RequestBody Map<String, String> body) {
+        RestaurantTable updated = tableUseCase.assignStaff(id, body.get("assignedStaffId"));
+        return ResponseEntity.ok(ApiResponse.success(tableMapper.toResponse(updated), "Staff assigned"));
+    }
+
     @PostMapping("/transfer")
     @Operation(summary = "Transfer order between tables")
     public ResponseEntity<ApiResponse<Void>> transferTable(@Valid @RequestBody TransferTableRequest request) {

@@ -82,6 +82,23 @@ public class TableDomainService implements TableUseCase {
     }
 
     @Override
+    public RestaurantTable assignStaff(String tableId, String staffId) {
+        RestaurantTable table = getTableById(tableId);
+        table.setAssignedStaffId(staffId);
+        return tableRepository.save(table);
+    }
+
+    @Override
+    public RestaurantTable setCurrentOrder(String tableId, String orderId) {
+        RestaurantTable table = getTableById(tableId);
+        table.setCurrentOrderId(orderId);
+        if (orderId != null && table.getStatus() != TableStatus.OCCUPIED) {
+            table.setStatus(TableStatus.OCCUPIED);
+        }
+        return tableRepository.save(table);
+    }
+
+    @Override
     public void transferTable(String fromTableId, String toTableId) {
         RestaurantTable from = getTableById(fromTableId);
         RestaurantTable to = getTableById(toTableId);

@@ -12,6 +12,8 @@ public interface TableUseCase {
     RestaurantTable updateTable(String id, RestaurantTable table);
     void deleteTable(String id);
     RestaurantTable updateStatus(String id, TableStatus status);
+    RestaurantTable assignStaff(String tableId, String staffId);
+    RestaurantTable setCurrentOrder(String tableId, String orderId);
     void transferTable(String fromTableId, String toTableId);
     RestaurantTable mergeTables(List<String> tableIds, String targetTableId);
 }

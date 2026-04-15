@@ -10,6 +10,8 @@ import com.bukukasir.order.domain.model.*;
 import com.bukukasir.order.domain.port.in.OrderUseCase;
 import com.bukukasir.order.domain.port.out.OrderRepository;
 import com.bukukasir.order.domain.port.out.TaxConfigRepository;
+import com.bukukasir.kitchen.domain.port.in.KitchenUseCase;
+import com.bukukasir.table.domain.port.in.TableUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,8 @@ public class OrderDomainService implements OrderUseCase {
     private final TaxConfigRepository taxConfigRepository;
     private final TaxCalculator taxCalculator;
     private final AuditLogger auditLogger;
+    private final KitchenUseCase kitchenUseCase;
+    private final TableUseCase tableUseCase;
 
     @Override
     public Order createOrder(Order order) {
@@ -39,6 +43,24 @@ public class OrderDomainService implements OrderUseCase {
         order.setUpdatedAt(Instant.now());
         recalculateTotal(order);
         Order saved = orderRepository.save(order);
+
+        try {
+            kitchenUseCase.createTicketFromOrder(saved);
+        } catch (Exception ignored) {
+        }
+
+        if (saved.getTableId() != null && !saved.getTableId().isBlank()) {
+            try {
+                tableUseCase.setCurrentOrder(saved.getTableId(), saved.getId());
+            } catch (Exception ignored) {
+            }
+            if (saved.getStaffId() != null && !saved.getStaffId().isBlank()) {
+                try {
+                    tableUseCase.assignStaff(saved.getTableId(), saved.getStaffId());
+                } catch (Exception ignored) {
+                }
+            }
+        }
 
         auditLogger.log(AuditLog.builder()
                 .actorId("staff-001").actorName("System")
