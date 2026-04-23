@@ -2,57 +2,72 @@ package com.bukukasir.business.infrastructure.persistence.adapter;
 
 import com.bukukasir.business.domain.model.Business;
 import com.bukukasir.business.domain.port.out.BusinessRepository;
+import com.bukukasir.business.infrastructure.persistence.entity.BusinessEntity;
+import com.bukukasir.business.infrastructure.persistence.repository.JpaBusinessRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class BusinessPersistenceAdapter implements BusinessRepository {
 
-    private final Map<String, Business> store = new ConcurrentHashMap<>();
-
-    public BusinessPersistenceAdapter() {
-        initMockData();
-    }
-
-    private void initMockData() {
-        store.put("biz-001", Business.builder()
-                .id("biz-001").name("Warung Nusantara").type("restaurant")
-                .address("Jl. Sudirman No. 123, Jakarta Selatan")
-                .phone("+62-21-5551234").ownerId("user-001")
-                .logoUrl(null).currency("IDR").timezone("Asia/Jakarta")
-                .active(true).createdAt(Instant.parse("2024-01-15T08:00:00Z"))
-                .updatedAt(Instant.parse("2024-06-01T10:00:00Z")).build());
-
-        store.put("biz-002", Business.builder()
-                .id("biz-002").name("Kopi Kenangan Senja").type("cafe")
-                .address("Jl. Gatot Subroto No. 45, Jakarta Selatan")
-                .phone("+62-21-5559876").ownerId("user-001")
-                .logoUrl(null).currency("IDR").timezone("Asia/Jakarta")
-                .active(true).createdAt(Instant.parse("2024-03-20T08:00:00Z"))
-                .updatedAt(Instant.parse("2024-05-15T10:00:00Z")).build());
-    }
+    private final JpaBusinessRepository jpa;
 
     @Override
     public List<Business> findAll() {
-        return new ArrayList<>(store.values());
+        return jpa.findAll().stream().map(this::toDomain).toList();
     }
 
     @Override
     public Optional<Business> findById(String id) {
-        return Optional.ofNullable(store.get(id));
+        return jpa.findById(id).map(this::toDomain);
     }
 
     @Override
     public Business save(Business business) {
-        store.put(business.getId(), business);
-        return business;
+        return toDomain(jpa.save(toEntity(business)));
     }
 
     @Override
     public void deleteById(String id) {
-        store.remove(id);
+        jpa.deleteById(id);
+    }
+
+    private Business toDomain(BusinessEntity e) {
+        return Business.builder()
+                .id(e.getId())
+                .name(e.getName())
+                .type(e.getType())
+                .address(e.getAddress())
+                .phone(e.getPhone())
+                .ownerId(e.getOwnerId())
+                .logoUrl(e.getLogoUrl())
+                .currency(e.getCurrency() != null ? e.getCurrency() : "IDR")
+                .timezone(e.getTimezone() != null ? e.getTimezone() : "Asia/Jakarta")
+                .active(e.isActive())
+                .createdAt(e.getCreatedAt() != null ? e.getCreatedAt() : Instant.now())
+                .updatedAt(e.getUpdatedAt() != null ? e.getUpdatedAt() : Instant.now())
+                .build();
+    }
+
+    private BusinessEntity toEntity(Business b) {
+        return BusinessEntity.builder()
+                .id(b.getId())
+                .name(b.getName())
+                .type(b.getType())
+                .address(b.getAddress())
+                .phone(b.getPhone())
+                .ownerId(b.getOwnerId())
+                .logoUrl(b.getLogoUrl())
+                .currency(b.getCurrency())
+                .timezone(b.getTimezone())
+                .active(b.isActive())
+                .createdAt(b.getCreatedAt())
+                .updatedAt(b.getUpdatedAt() != null ? b.getUpdatedAt() : Instant.now())
+                .build();
     }
 }

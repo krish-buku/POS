@@ -13,6 +13,7 @@ import com.bukukasir.order.domain.port.out.TaxConfigRepository;
 import com.bukukasir.kitchen.domain.port.in.KitchenUseCase;
 import com.bukukasir.table.domain.port.in.TableUseCase;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -23,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderDomainService implements OrderUseCase {
@@ -46,18 +48,22 @@ public class OrderDomainService implements OrderUseCase {
 
         try {
             kitchenUseCase.createTicketFromOrder(saved);
-        } catch (Exception ignored) {
+            log.info("Kitchen ticket created for order {} (business {})", saved.getOrderNumber(), saved.getBusinessId());
+        } catch (Exception e) {
+            log.error("Failed to create kitchen ticket for order {}: {}", saved.getOrderNumber(), e.getMessage(), e);
         }
 
         if (saved.getTableId() != null && !saved.getTableId().isBlank()) {
             try {
                 tableUseCase.setCurrentOrder(saved.getTableId(), saved.getId());
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.warn("Failed to set current order on table {}: {}", saved.getTableId(), e.getMessage());
             }
             if (saved.getStaffId() != null && !saved.getStaffId().isBlank()) {
                 try {
                     tableUseCase.assignStaff(saved.getTableId(), saved.getStaffId());
-                } catch (Exception ignored) {
+                } catch (Exception e) {
+                    log.warn("Failed to assign staff {} to table {}: {}", saved.getStaffId(), saved.getTableId(), e.getMessage());
                 }
             }
         }

@@ -3,33 +3,71 @@ package com.bukukasir.table.infrastructure.persistence.adapter;
 import com.bukukasir.table.domain.model.RestaurantTable;
 import com.bukukasir.table.domain.model.TableStatus;
 import com.bukukasir.table.domain.port.out.TableRepository;
+import com.bukukasir.table.infrastructure.persistence.entity.TableEntity;
+import com.bukukasir.table.infrastructure.persistence.repository.JpaTableRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class TablePersistenceAdapter implements TableRepository {
 
-    private final Map<String, RestaurantTable> store = new ConcurrentHashMap<>();
+    private final JpaTableRepository jpa;
 
-    public TablePersistenceAdapter() {
-        initMockData();
+    @Override
+    public List<RestaurantTable> findAll() {
+        return jpa.findAll().stream().map(this::toDomain).toList();
     }
 
-    private void initMockData() {
-        store.put("table-001", RestaurantTable.builder().id("table-001").name("T1").capacity(4).status(TableStatus.OCCUPIED).areaId("area-001").floorId("floor-001").businessId("biz-001").currentOrderId("order-001").build());
-        store.put("table-002", RestaurantTable.builder().id("table-002").name("T2").capacity(4).status(TableStatus.AVAILABLE).areaId("area-001").floorId("floor-001").businessId("biz-001").build());
-        store.put("table-003", RestaurantTable.builder().id("table-003").name("T3").capacity(6).status(TableStatus.OCCUPIED).areaId("area-001").floorId("floor-001").businessId("biz-001").currentOrderId("order-002").build());
-        store.put("table-004", RestaurantTable.builder().id("table-004").name("T4").capacity(2).status(TableStatus.RESERVED).areaId("area-001").floorId("floor-001").businessId("biz-001").build());
-        store.put("table-005", RestaurantTable.builder().id("table-005").name("T5").capacity(4).status(TableStatus.AVAILABLE).areaId("area-002").floorId("floor-001").businessId("biz-001").build());
-        store.put("table-006", RestaurantTable.builder().id("table-006").name("T6").capacity(8).status(TableStatus.OCCUPIED).areaId("area-002").floorId("floor-001").businessId("biz-001").currentOrderId("order-003").build());
-        store.put("table-007", RestaurantTable.builder().id("table-007").name("T7").capacity(4).status(TableStatus.CLEANING).areaId("area-002").floorId("floor-001").businessId("biz-001").build());
-        store.put("table-008", RestaurantTable.builder().id("table-008").name("T8").capacity(6).status(TableStatus.AVAILABLE).areaId("area-002").floorId("floor-001").businessId("biz-001").build());
+    @Override
+    public Optional<RestaurantTable> findById(String id) {
+        return jpa.findById(id).map(this::toDomain);
     }
 
-    @Override public List<RestaurantTable> findAll() { return new ArrayList<>(store.values()); }
-    @Override public Optional<RestaurantTable> findById(String id) { return Optional.ofNullable(store.get(id)); }
-    @Override public RestaurantTable save(RestaurantTable table) { store.put(table.getId(), table); return table; }
-    @Override public void deleteById(String id) { store.remove(id); }
+    @Override
+    public RestaurantTable save(RestaurantTable table) {
+        TableEntity saved = jpa.save(toEntity(table));
+        return toDomain(saved);
+    }
+
+    @Override
+    public void deleteById(String id) {
+        jpa.deleteById(id);
+    }
+
+    private RestaurantTable toDomain(TableEntity e) {
+        return RestaurantTable.builder()
+                .id(e.getId())
+                .number(e.getNumber())
+                .name(e.getName())
+                .capacity(e.getCapacity())
+                .status(e.getStatus() != null ? TableStatus.valueOf(e.getStatus().toUpperCase()) : TableStatus.AVAILABLE)
+                .areaId(e.getAreaId())
+                .floorId(e.getFloorId())
+                .businessId(e.getBusinessId())
+                .currentOrderId(e.getCurrentOrderId())
+                .assignedStaffId(e.getAssignedStaffId())
+                .runningTotal(e.getRunningTotal() != null ? e.getRunningTotal() : BigDecimal.ZERO)
+                .build();
+    }
+
+    private TableEntity toEntity(RestaurantTable t) {
+        return TableEntity.builder()
+                .id(t.getId())
+                .number(t.getNumber())
+                .name(t.getName())
+                .capacity(t.getCapacity())
+                .status(t.getStatus() != null ? t.getStatus().name() : TableStatus.AVAILABLE.name())
+                .areaId(t.getAreaId())
+                .floorId(t.getFloorId())
+                .businessId(t.getBusinessId())
+                .currentOrderId(t.getCurrentOrderId())
+                .assignedStaffId(t.getAssignedStaffId())
+                .runningTotal(t.getRunningTotal() != null ? t.getRunningTotal() : BigDecimal.ZERO)
+                .build();
+    }
 }

@@ -8,12 +8,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class TableMapper {
     public TableResponse toResponse(RestaurantTable t) {
-        return new TableResponse(t.getId(), t.getName(), t.getCapacity(),
-                t.getStatus().name(), t.getAreaId(), t.getFloorId(),
-                t.getBusinessId(), t.getCurrentOrderId(), t.getAssignedStaffId());
+        return new TableResponse(
+                t.getId(),
+                t.getNumber(),
+                t.getName(),
+                t.getCapacity(),
+                t.getStatus() != null ? t.getStatus().name().toLowerCase() : "available",
+                t.getAreaId(),
+                t.getFloorId(),
+                t.getBusinessId(),
+                t.getCurrentOrderId(),
+                t.getAssignedStaffId(),
+                t.getRunningTotal());
     }
+
     public RestaurantTable toDomain(TableRequest r) {
-        return RestaurantTable.builder().name(r.name()).capacity(r.capacity())
-                .areaId(r.areaId()).floorId(r.floorId()).businessId(r.businessId()).build();
+        return RestaurantTable.builder()
+                .name(r.name())
+                .capacity(r.capacity())
+                .areaId(r.areaId())
+                .floorId(r.floorId())
+                .businessId(r.businessId())
+                .build();
     }
 }

@@ -40,9 +40,12 @@ public class OrderController {
     }
 
     @GetMapping
-    @Operation(summary = "List all orders")
-    public ResponseEntity<ApiResponse<List<OrderResponse>>> getAllOrders() {
-        List<OrderResponse> responses = orderUseCase.getAllOrders().stream().map(orderMapper::toResponse).toList();
+    @Operation(summary = "List all orders, optionally filtered by business")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getAllOrders(
+            @RequestParam(required = false) String businessId) {
+        List<OrderResponse> responses = orderUseCase.getAllOrders().stream()
+                .filter(o -> businessId == null || businessId.equals(o.getBusinessId()))
+                .map(orderMapper::toResponse).toList();
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 

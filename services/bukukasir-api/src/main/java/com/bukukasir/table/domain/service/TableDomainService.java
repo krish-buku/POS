@@ -26,7 +26,11 @@ public class TableDomainService implements TableUseCase {
     private final AuditLogger auditLogger;
 
     @Override
-    public List<RestaurantTable> getAllTables(String businessId) { return tableRepository.findAll(); }
+    public List<RestaurantTable> getAllTables(String businessId) {
+        List<RestaurantTable> all = tableRepository.findAll();
+        if (businessId == null) return all;
+        return all.stream().filter(t -> businessId.equals(t.getBusinessId())).toList();
+    }
 
     @Override
     public RestaurantTable getTableById(String id) {

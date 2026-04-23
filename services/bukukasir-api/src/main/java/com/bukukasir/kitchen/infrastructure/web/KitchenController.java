@@ -22,9 +22,14 @@ public class KitchenController {
     private final KitchenUseCase kitchenUseCase;
 
     @GetMapping("/tickets")
-    @Operation(summary = "List all kitchen tickets")
-    public ResponseEntity<ApiResponse<List<KitchenTicket>>> getAllTickets() {
-        return ResponseEntity.ok(ApiResponse.success(kitchenUseCase.getAllTickets()));
+    @Operation(summary = "List all kitchen tickets, optionally filtered by business")
+    public ResponseEntity<ApiResponse<List<KitchenTicket>>> getAllTickets(
+            @RequestParam(required = false) String businessId) {
+        List<KitchenTicket> all = kitchenUseCase.getAllTickets();
+        if (businessId != null) {
+            all = all.stream().filter(t -> businessId.equals(t.getBusinessId())).toList();
+        }
+        return ResponseEntity.ok(ApiResponse.success(all));
     }
 
     @GetMapping("/tickets/{id}")

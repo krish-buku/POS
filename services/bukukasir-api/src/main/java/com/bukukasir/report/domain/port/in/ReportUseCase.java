@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface ReportUseCase {
-    DailySummary getDailySummary(String date);
-    SalesReport getSalesReport(String period);
-    List<PaymentMethodBreakdown> getPaymentMethodBreakdown();
-    List<Map<String, Object>> getTopItems(int limit);
-    List<Map<String, Object>> getStaffPerformance();
+    DailySummary getDailySummary(String date, String businessId);
+    SalesReport getSalesReport(String period, String businessId);
+    List<PaymentMethodBreakdown> getPaymentMethodBreakdown(String businessId);
+    List<Map<String, Object>> getTopItems(int limit, String businessId);
+    List<Map<String, Object>> getStaffPerformance(String businessId);
 }

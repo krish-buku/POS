@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RestaurantTable {
     private String id;
+    private String number;
     private String name;
     private int capacity;
     private TableStatus status;
@@ -19,4 +20,5 @@ public class RestaurantTable {
     private String businessId;
     private String currentOrderId;
     private String assignedStaffId;
+    private java.math.BigDecimal runningTotal;
 }
