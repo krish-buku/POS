@@ -40,37 +40,37 @@ public class MenuPersistenceAdapter implements MenuRepository {
         ModifierGroup sugarGroup = ModifierGroup.builder().id("mg-002").name("Level Gula").required(false).maxSelections(1).modifiers(drinkModifiers).build();
 
         menuItems.put("menu-001", MenuItem.builder().id("menu-001").name("Nasi Goreng Spesial").description("Nasi goreng dengan telur, ayam, dan sayuran")
-                .price(new BigDecimal("25000")).categoryId("cat-001").businessId("biz-001").available(true)
+                .price(new BigDecimal("25000")).categoryId("cat-001").businessId("biz-001").imageUrl("/menu-images/nasi-goreng.png").available(true)
                 .modifierGroups(List.of(spiceGroup)).variants(List.of()).build());
         menuItems.put("menu-002", MenuItem.builder().id("menu-002").name("Mie Goreng").description("Mie goreng dengan sayuran segar")
-                .price(new BigDecimal("22000")).categoryId("cat-001").businessId("biz-001").available(true)
+                .price(new BigDecimal("22000")).categoryId("cat-001").businessId("biz-001").imageUrl("/menu-images/mie-goreng.png").available(true)
                 .modifierGroups(List.of(spiceGroup)).variants(List.of()).build());
         menuItems.put("menu-003", MenuItem.builder().id("menu-003").name("Ayam Bakar").description("Ayam bakar bumbu kecap")
-                .price(new BigDecimal("35000")).categoryId("cat-001").businessId("biz-001").available(true)
+                .price(new BigDecimal("35000")).categoryId("cat-001").businessId("biz-001").imageUrl("/menu-images/ayam-bakar.png").available(true)
                 .modifierGroups(List.of(spiceGroup)).variants(List.of()).build());
         menuItems.put("menu-004", MenuItem.builder().id("menu-004").name("Soto Ayam").description("Soto ayam dengan kuah bening")
-                .price(new BigDecimal("20000")).categoryId("cat-001").businessId("biz-001").available(true)
+                .price(new BigDecimal("20000")).categoryId("cat-001").businessId("biz-001").imageUrl("/menu-images/soto-ayam.png").available(true)
                 .modifierGroups(List.of(spiceGroup)).variants(List.of()).build());
         menuItems.put("menu-005", MenuItem.builder().id("menu-005").name("Es Teh Manis").description("Teh manis dingin")
-                .price(new BigDecimal("8000")).categoryId("cat-002").businessId("biz-001").available(true)
+                .price(new BigDecimal("8000")).categoryId("cat-002").businessId("biz-001").imageUrl("/menu-images/es-teh-manis.png").available(true)
                 .modifierGroups(List.of(sugarGroup)).variants(List.of()).build());
         menuItems.put("menu-006", MenuItem.builder().id("menu-006").name("Es Jeruk").description("Jeruk peras segar")
-                .price(new BigDecimal("10000")).categoryId("cat-002").businessId("biz-001").available(true)
+                .price(new BigDecimal("10000")).categoryId("cat-002").businessId("biz-001").imageUrl("/menu-images/es-jeruk.png").available(true)
                 .modifierGroups(List.of(sugarGroup)).variants(List.of()).build());
         menuItems.put("menu-007", MenuItem.builder().id("menu-007").name("Kopi Susu").description("Kopi susu ala warung")
-                .price(new BigDecimal("15000")).categoryId("cat-002").businessId("biz-001").available(true)
+                .price(new BigDecimal("15000")).categoryId("cat-002").businessId("biz-001").imageUrl("/menu-images/kopi-susu.png").available(true)
                 .modifierGroups(List.of(sugarGroup)).variants(List.of(
                         Variant.builder().id("var-001").name("Hot").priceAdjustment(BigDecimal.ZERO).build(),
                         Variant.builder().id("var-002").name("Iced").priceAdjustment(new BigDecimal("3000")).build()
                 )).build());
         menuItems.put("menu-008", MenuItem.builder().id("menu-008").name("Pisang Goreng").description("Pisang goreng crispy")
-                .price(new BigDecimal("12000")).categoryId("cat-003").businessId("biz-001").available(true)
+                .price(new BigDecimal("12000")).categoryId("cat-003").businessId("biz-001").imageUrl("/menu-images/pisang-goreng.png").available(true)
                 .modifierGroups(List.of()).variants(List.of()).build());
         menuItems.put("menu-009", MenuItem.builder().id("menu-009").name("Tahu Crispy").description("Tahu goreng crispy dengan sambal")
-                .price(new BigDecimal("10000")).categoryId("cat-003").businessId("biz-001").available(false)
+                .price(new BigDecimal("10000")).categoryId("cat-003").businessId("biz-001").imageUrl("/menu-images/tahu-goreng.png").available(false)
                 .modifierGroups(List.of()).variants(List.of()).build());
         menuItems.put("menu-010", MenuItem.builder().id("menu-010").name("Es Campur").description("Es campur dengan aneka topping")
-                .price(new BigDecimal("18000")).categoryId("cat-004").businessId("biz-001").available(true)
+                .price(new BigDecimal("18000")).categoryId("cat-004").businessId("biz-001").imageUrl("/menu-images/es-campur.png").available(true)
                 .modifierGroups(List.of()).variants(List.of()).build());
     }
 
