@@ -142,6 +142,43 @@ public class OrderDomainService implements OrderUseCase {
         return saved;
     }
 
+    @Override
+    public Order markOrderPaid(String orderId, String paymentMethodName) {
+        Order order = getOrderById(orderId);
+        if (order.getStatus() == OrderStatus.VOIDED) {
+            throw new BusinessException("ORDER_VOIDED", "Cannot mark a voided order as paid");
+        }
+        Map<String, Object> oldValues = orderToMap(order);
+
+        order.setStatus(OrderStatus.COMPLETED);
+        order.setUpdatedAt(Instant.now());
+        Order saved = orderRepository.save(order);
+
+        if (saved.getTableId() != null && !saved.getTableId().isBlank()) {
+            try {
+                tableUseCase.updateStatus(saved.getTableId(), com.bukukasir.table.domain.model.TableStatus.AVAILABLE);
+            } catch (Exception e) {
+                log.warn("Failed to release table {} after payment for order {}: {}", saved.getTableId(), saved.getOrderNumber(), e.getMessage());
+            }
+        }
+
+        Map<String, Object> newValues = orderToMap(saved);
+        newValues.put("paymentMethod", paymentMethodName);
+
+        auditLogger.log(AuditLog.builder()
+                .actorId("staff-001").actorName("System")
+                .businessId(saved.getBusinessId())
+                .action(AuditAction.STATUS_CHANGE)
+                .entityType("Order").entityId(saved.getId())
+                .description("Marked order " + saved.getOrderNumber() + " as paid via " + paymentMethodName)
+                .oldValues(oldValues)
+                .newValues(newValues)
+                .timestamp(LocalDateTime.now())
+                .build());
+
+        return saved;
+    }
+
     private void recalculateTotal(Order order) {
         if (order.getItems() == null || order.getItems().isEmpty()) {
             order.setSubtotal(BigDecimal.ZERO);

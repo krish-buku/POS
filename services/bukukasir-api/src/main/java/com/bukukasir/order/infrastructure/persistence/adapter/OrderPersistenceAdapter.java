@@ -112,7 +112,13 @@ public class OrderPersistenceAdapter implements OrderRepository {
             List<T> result = objectMapper.readValue(json, ref);
             return result != null ? result : Collections.emptyList();
         } catch (Exception ex) {
-            throw new IllegalStateException("Failed to deserialize JSONB column: " + ex.getMessage(), ex);
+            try {
+                String unquoted = objectMapper.readValue(json, String.class);
+                List<T> result = objectMapper.readValue(unquoted, ref);
+                return result != null ? result : Collections.emptyList();
+            } catch (Exception nested) {
+                throw new IllegalStateException("Failed to deserialize JSONB column: " + nested.getMessage(), nested);
+            }
         }
     }
 

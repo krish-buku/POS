@@ -94,7 +94,7 @@ public class OrderPersistenceAdapter implements OrderRepository {
     @Override public List<Order> findAll() { return new ArrayList<>(store.values()); }
     @Override public Optional<Order> findById(String id) { return Optional.ofNullable(store.get(id)); }
     @Override public List<Order> findByTableId(String tableId) {
-        return store.values().stream().filter(o -> o.getTableId().equals(tableId)).collect(Collectors.toList());
+        return store.values().stream().filter(o -> tableId.equals(o.getTableId())).collect(Collectors.toList());
     }
     @Override public Order save(Order order) { store.put(order.getId(), order); return order; }
 }

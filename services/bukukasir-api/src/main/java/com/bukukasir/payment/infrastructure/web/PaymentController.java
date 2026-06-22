@@ -41,6 +41,13 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(created, "Payment recorded"));
     }
 
+    @GetMapping
+    @Operation(summary = "List payments, optionally filtered by business")
+    public ResponseEntity<ApiResponse<List<Payment>>> getPayments(
+            @RequestParam(required = false) String businessId) {
+        return ResponseEntity.ok(ApiResponse.success(paymentUseCase.getPayments(businessId)));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get payment by ID")
     public ResponseEntity<ApiResponse<Payment>> getPaymentById(@PathVariable String id) {

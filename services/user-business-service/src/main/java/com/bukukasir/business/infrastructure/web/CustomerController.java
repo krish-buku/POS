@@ -34,9 +34,14 @@ public class CustomerController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Customers retrieved")
     })
     public ResponseEntity<ApiResponse<List<CustomerResponse>>> getCustomers(
-            @Parameter(description = "Business ID") @RequestParam String businessId) {
+            @Parameter(description = "Business ID") @RequestParam String businessId,
+            @Parameter(description = "Optional search query for name or phone") @RequestParam(required = false, name = "q") String query) {
+        String normalizedQuery = query == null ? "" : query.trim().toLowerCase();
         List<CustomerResponse> responses = customerUseCase.getCustomers(businessId).stream()
                 .map(businessMapper::toCustomerResponse)
+                .filter(customer -> normalizedQuery.isBlank()
+                        || (customer.name() != null && customer.name().toLowerCase().contains(normalizedQuery))
+                        || (customer.phone() != null && customer.phone().toLowerCase().contains(normalizedQuery)))
                 .toList();
         return ResponseEntity.ok(ApiResponse.success(responses));
     }

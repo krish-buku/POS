@@ -1,0 +1,16 @@
+category,name,description,price,imageUrl,available
+Minuman,Es Teh Manis,"Teh hitam diseduh dengan gula, disajikan dingin",8000,,yes
+Minuman,Es Jeruk,Perasan jeruk segar dengan es batu,10000,,yes
+Minuman,Kopi Susu Gula Aren,"Espresso, susu segar, sirup gula aren",18000,,yes
+Minuman,Air Mineral,Botol 600ml,5000,,yes
+Makanan,Nasi Goreng Spesial,"Nasi goreng dengan ayam, telur, acar, kerupuk",28000,,yes
+Makanan,Mie Ayam Bakso,Mie ayam dengan bakso sapi dan pangsit,25000,,yes
+Makanan,Soto Ayam,Kuah bening rempah dengan ayam suwir dan soun,22000,,yes
+Makanan,Ayam Geprek Sambal Matah,Ayam goreng digeprek dengan sambal matah khas Bali,26000,,yes
+Makanan Ringan,Pisang Goreng,"Pisang kepok goreng tepung renyah, 4 pcs",12000,,yes
+Makanan Ringan,Kentang Goreng,French fries dengan saus sambal dan mayo,18000,,yes
+Makanan Ringan,Roti Bakar Cokelat Keju,Roti tawar panggang isi cokelat dan keju parut,15000,,yes
+Paket,Paket Hemat Nasi Goreng,Nasi goreng + es teh manis + kerupuk,32000,,yes
+Paket,Paket Ngopi Santai,Kopi susu gula aren + pisang goreng,26000,,yes
+Makanan,Grilled Chicken Rice Bowl,"Grilled chicken thigh, rice, salad, teriyaki sauce",35000,,yes
+Minuman,Matcha Latte (Iced),"Ceremonial grade matcha with fresh milk, iced",22000,,no

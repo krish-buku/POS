@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "BukuKasir",
+    "slug": "bukukasir-mobile",
+    "version": "1.0.0",
+    "orientation": "landscape",
+    "icon": "./assets/bukuwarung-app-icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "bukukasir",
+    "splash": {
+      "image": "./assets/bukuwarung-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2563eb"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "requireFullScreen": true,
+      "bundleIdentifier": "com.anonymous.bukukasirmobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff",
+        "foregroundImage": "./assets/bukuwarung-logo.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.bukukasirmobile"
+    },
+    "web": {
+      "favicon": "./assets/bukuwarung-logo.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

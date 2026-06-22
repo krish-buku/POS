@@ -1,11 +1,17 @@
-# BukuKasir Backend
+# BukuKasir POS
 
-Spring Boot backend for BukuKasir POS. The consolidated API used by the mobile and backoffice apps is `services:bukukasir-api`.
+Monorepo for BukuKasir POS:
+
+- Backend API: Spring Boot services at the repo root, with the consolidated API in `services:bukukasir-api`.
+- Backoffice app: `bukukasir-backoffice`.
+- Mobile/tablet POS app: `bukukasir-mobile`.
 
 ## Requirements
 
 - Java 21
 - Gradle wrapper from this repo
+- Node.js and npm
+- Xcode + iPad Simulator for mobile iOS simulator runs
 - Optional: PostgreSQL/Supabase-compatible database
 
 If Homebrew Java 25 is first on your PATH, pin Java 21 when running Gradle:
@@ -14,12 +20,21 @@ If Homebrew Java 25 is first on your PATH, pin Java 21 when running Gradle:
 export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ```
 
-## Run Locally Without Supabase
+## Install App Dependencies
+
+```bash
+cd bukukasir-backoffice
+npm ci
+
+cd ../bukukasir-mobile
+npm ci
+```
+
+## Run Backend Locally Without Supabase
 
 The `localdb` profile uses an H2 file database and Flyway migrations.
 
 ```bash
-cd bukukasir-backend
 export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ./gradlew :services:bukukasir-api:bootRun --args='--spring.profiles.active=localdb'
 ```
@@ -31,6 +46,33 @@ Local API:
 - JDBC URL: `jdbc:h2:file:./build/localdb/bukukasir;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH`
 - Username: `sa`
 - Password: blank
+
+## Run Backoffice
+
+In another terminal:
+
+```bash
+cd bukukasir-backoffice
+npm run dev -- --host 0.0.0.0 --port 5173
+```
+
+Open `http://localhost:5173`.
+
+## Run Mobile On iPad Simulator
+
+Start the iPad Simulator first, then run:
+
+```bash
+cd bukukasir-mobile
+npx expo start --ios
+```
+
+The app is configured for tablet landscape, uses the BukuWarung logo assets in `bukukasir-mobile/assets`, and can also be checked in browser mode with:
+
+```bash
+cd bukukasir-mobile
+npm run web
+```
 
 ## Run With PostgreSQL / Supabase
 
@@ -49,6 +91,15 @@ Flyway is enabled with `baseline-on-migrate=true` so existing databases can adop
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 ./gradlew :services:bukukasir-api:test :services:bukukasir-api:bootJar
+
+cd bukukasir-backoffice
+npm ci
+npm run build
+
+cd ../bukukasir-mobile
+npm ci
+npx tsc --noEmit
+npx expo config --type public
 ```
 
 The focused enterprise POS tests verify:

@@ -76,7 +76,13 @@ public class KitchenPersistenceAdapter implements KitchenTicketRepository {
             List<TicketItem> items = objectMapper.readValue(json, new TypeReference<List<TicketItem>>() {});
             return items != null ? items : Collections.emptyList();
         } catch (Exception ex) {
-            throw new IllegalStateException("Failed to deserialize kitchen ticket items: " + ex.getMessage(), ex);
+            try {
+                String unquoted = objectMapper.readValue(json, String.class);
+                List<TicketItem> items = objectMapper.readValue(unquoted, new TypeReference<List<TicketItem>>() {});
+                return items != null ? items : Collections.emptyList();
+            } catch (Exception nested) {
+                throw new IllegalStateException("Failed to deserialize kitchen ticket items: " + nested.getMessage(), nested);
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.bukukasir.kitchen.infrastructure.web;
 
 import com.bukukasir.common.dto.ApiResponse;
 import com.bukukasir.kitchen.domain.model.KitchenTicket;
+import com.bukukasir.kitchen.domain.model.TicketItem;
 import com.bukukasir.kitchen.domain.model.TicketStatus;
 import com.bukukasir.kitchen.domain.port.in.KitchenUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +34,20 @@ public class KitchenController {
         return ResponseEntity.ok(ApiResponse.success(kitchenUseCase.getTicketById(id)));
     }
 
+    @PostMapping("/tickets")
+    @Operation(summary = "Create a kitchen ticket")
+    public ResponseEntity<ApiResponse<KitchenTicket>> createTicket(@RequestBody CreateKitchenTicketRequest request) {
+        KitchenTicket ticket = KitchenTicket.builder()
+                .ticketNumber(request.ticketNumber())
+                .orderId(request.orderId())
+                .orderNumber(request.orderNumber())
+                .tableName(request.tableName())
+                .items(request.items() != null ? request.items() : List.of())
+                .businessId(request.businessId())
+                .build();
+        return ResponseEntity.ok(ApiResponse.success(kitchenUseCase.createTicket(ticket), "Ticket created"));
+    }
+
     @PutMapping("/tickets/{id}/status")
     @Operation(summary = "Update ticket status")
     public ResponseEntity<ApiResponse<KitchenTicket>> updateTicketStatus(
@@ -46,4 +61,12 @@ public class KitchenController {
     public ResponseEntity<ApiResponse<KitchenTicket>> reprintTicket(@PathVariable String id) {
         return ResponseEntity.ok(ApiResponse.success(kitchenUseCase.reprintTicket(id), "Ticket reprinted"));
     }
+
+    public record CreateKitchenTicketRequest(
+            String ticketNumber,
+            String orderId,
+            String orderNumber,
+            String tableName,
+            List<TicketItem> items,
+            String businessId) {}
 }

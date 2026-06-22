@@ -12,4 +12,5 @@ public interface OrderUseCase {
     List<Order> getAllOrders();
     Order addItems(String orderId, List<OrderItem> items);
     Order voidOrder(String orderId, String reason);
+    Order markOrderPaid(String orderId, String paymentMethodName);
 }

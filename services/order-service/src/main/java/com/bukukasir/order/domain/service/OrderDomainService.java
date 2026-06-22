@@ -11,7 +11,9 @@ import com.bukukasir.order.domain.port.in.OrderUseCase;
 import com.bukukasir.order.domain.port.out.OrderRepository;
 import com.bukukasir.order.domain.port.out.TaxConfigRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -23,12 +25,14 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderDomainService implements OrderUseCase {
 
     private final OrderRepository orderRepository;
     private final TaxConfigRepository taxConfigRepository;
     private final TaxCalculator taxCalculator;
     private final AuditLogger auditLogger;
+    private final RestTemplate workflowRestTemplate = new RestTemplate();
 
     @Override
     public Order createOrder(Order order) {
@@ -39,6 +43,9 @@ public class OrderDomainService implements OrderUseCase {
         order.setUpdatedAt(Instant.now());
         recalculateTotal(order);
         Order saved = orderRepository.save(order);
+
+        createKitchenTicket(saved);
+        occupyTable(saved);
 
         auditLogger.log(AuditLog.builder()
                 .actorId("staff-001").actorName("System")
@@ -112,6 +119,84 @@ public class OrderDomainService implements OrderUseCase {
                 .build());
 
         return saved;
+    }
+
+    @Override
+    public Order markOrderPaid(String orderId, String paymentMethodName) {
+        Order order = getOrderById(orderId);
+        if (order.getStatus() == OrderStatus.VOIDED) {
+            throw new BusinessException("ORDER_VOIDED", "Cannot mark a voided order as paid");
+        }
+        Map<String, Object> oldValues = orderToMap(order);
+
+        order.setStatus(OrderStatus.COMPLETED);
+        order.setUpdatedAt(Instant.now());
+        Order saved = orderRepository.save(order);
+
+        releaseTable(saved);
+
+        Map<String, Object> newValues = orderToMap(saved);
+        newValues.put("paymentMethod", paymentMethodName);
+
+        auditLogger.log(AuditLog.builder()
+                .actorId("staff-001").actorName("System")
+                .businessId(saved.getBusinessId())
+                .action(AuditAction.STATUS_CHANGE)
+                .entityType("Order").entityId(saved.getId())
+                .description("Marked order " + saved.getOrderNumber() + " as paid via " + paymentMethodName)
+                .oldValues(oldValues)
+                .newValues(newValues)
+                .timestamp(LocalDateTime.now())
+                .build());
+
+        return saved;
+    }
+
+    private void createKitchenTicket(Order order) {
+        try {
+            List<Map<String, Object>> items = order.getItems() == null ? List.of() : order.getItems().stream()
+                    .map(item -> {
+                        Map<String, Object> body = new LinkedHashMap<>();
+                        body.put("menuItemName", item.getMenuItemName());
+                        body.put("quantity", item.getQuantity());
+                        body.put("notes", item.getNotes());
+                        body.put("modifiers", item.getModifiers());
+                        return body;
+                    })
+                    .toList();
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("ticketNumber", "TKT-" + order.getOrderNumber());
+            body.put("orderId", order.getId());
+            body.put("orderNumber", order.getOrderNumber());
+            body.put("tableName", order.getTableName());
+            body.put("items", items);
+            body.put("businessId", order.getBusinessId());
+            workflowRestTemplate.postForObject("http://localhost:8088/api/kitchen/tickets", body, Object.class);
+        } catch (Exception e) {
+            log.warn("Failed to create kitchen ticket for order {}: {}", order.getOrderNumber(), e.getMessage());
+        }
+    }
+
+    private void occupyTable(Order order) {
+        updateTableStatus(order, "OCCUPIED");
+    }
+
+    private void releaseTable(Order order) {
+        updateTableStatus(order, "AVAILABLE");
+    }
+
+    private void updateTableStatus(Order order, String status) {
+        if (order.getTableId() == null || order.getTableId().isBlank()) {
+            return;
+        }
+        try {
+            workflowRestTemplate.put(
+                    "http://localhost:8085/api/tables/{tableId}/status",
+                    Map.of("status", status),
+                    order.getTableId());
+        } catch (Exception e) {
+            log.warn("Failed to update table {} to {} for order {}: {}", order.getTableId(), status, order.getOrderNumber(), e.getMessage());
+        }
     }
 
     private void recalculateTotal(Order order) {

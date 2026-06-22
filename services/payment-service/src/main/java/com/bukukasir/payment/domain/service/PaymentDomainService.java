@@ -12,7 +12,9 @@ import com.bukukasir.payment.domain.model.TransactionLine;
 import com.bukukasir.payment.domain.port.in.PaymentUseCase;
 import com.bukukasir.payment.domain.port.out.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -25,11 +27,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentDomainService implements PaymentUseCase {
 
     private final PaymentRepository paymentRepository;
     private final LedgerLineGenerator ledgerLineGenerator;
     private final AuditLogger auditLogger;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public Payment createPayment(Payment payment) {
@@ -46,6 +50,18 @@ public class PaymentDomainService implements PaymentUseCase {
         List<TransactionLine> ledgerLines = ledgerLineGenerator.generateLedgerLines(payment);
         payment.setLedgerLines(ledgerLines);
         Payment saved = paymentRepository.savePayment(payment);
+
+        if ("COMPLETED".equals(saved.getStatus()) && saved.getOrderId() != null && !saved.getOrderId().isBlank()) {
+            try {
+                restTemplate.postForObject(
+                        "http://localhost:8086/api/orders/{orderId}/paid",
+                        Map.of("paymentMethodName", saved.getPaymentMethodName()),
+                        Object.class,
+                        saved.getOrderId());
+            } catch (Exception e) {
+                log.warn("Payment {} was recorded, but order {} could not be marked paid: {}", saved.getId(), saved.getOrderId(), e.getMessage());
+            }
+        }
 
         Map<String, Object> newValues = new LinkedHashMap<>();
         newValues.put("orderId", saved.getOrderId());
@@ -74,13 +90,22 @@ public class PaymentDomainService implements PaymentUseCase {
     }
 
     @Override
+    public List<Payment> getPayments(String businessId) {
+        return paymentRepository.findAllPayments().stream()
+                .filter(payment -> businessId == null || businessId.isBlank() || businessId.equals(payment.getBusinessId()))
+                .toList();
+    }
+
+    @Override
     public List<Payment> getPaymentsByOrderId(String orderId) {
         return paymentRepository.findPaymentsByOrderId(orderId);
     }
 
     @Override
     public List<PaymentMethod> getPaymentMethods(String businessId) {
-        return paymentRepository.findAllPaymentMethods();
+        return paymentRepository.findAllPaymentMethods().stream()
+                .filter(method -> businessId == null || businessId.isBlank() || businessId.equals(method.getBusinessId()))
+                .toList();
     }
 
     @Override

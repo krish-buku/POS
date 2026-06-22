@@ -9,7 +9,7 @@ import java.util.List;
 
 @Schema(description = "Create order request")
 public record CreateOrderRequest(
-    @NotBlank @Schema(example = "table-001") String tableId,
+    @Schema(example = "table-001") String tableId,
     @Schema(example = "T1") String tableName,
     @NotBlank @Schema(example = "staff-003") String staffId,
     @Schema(example = "Ahmad Wijaya") String staffName,

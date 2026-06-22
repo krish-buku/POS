@@ -78,6 +78,15 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(orderMapper.toResponse(voided), "Order voided"));
     }
 
+    @PostMapping("/{id}/paid")
+    @Operation(summary = "Mark an order as paid")
+    public ResponseEntity<ApiResponse<OrderResponse>> markOrderPaid(
+            @PathVariable String id, @RequestBody(required = false) Map<String, String> body) {
+        String paymentMethodName = body != null ? body.getOrDefault("paymentMethodName", "Manual") : "Manual";
+        Order paid = orderUseCase.markOrderPaid(id, paymentMethodName);
+        return ResponseEntity.ok(ApiResponse.success(orderMapper.toResponse(paid), "Order paid"));
+    }
+
     @GetMapping("/audit")
     @Operation(summary = "Query order audit logs", description = "Returns audit trail for order-related actions")
     @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {

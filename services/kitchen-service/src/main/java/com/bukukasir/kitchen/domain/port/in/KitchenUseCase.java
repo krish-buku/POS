@@ -10,4 +10,5 @@ public interface KitchenUseCase {
     KitchenTicket getTicketById(String id);
     KitchenTicket updateTicketStatus(String id, TicketStatus status);
     KitchenTicket reprintTicket(String id);
+    KitchenTicket createTicket(KitchenTicket ticket);
 }
