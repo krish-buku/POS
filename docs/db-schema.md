@@ -5,7 +5,7 @@ Local development currently runs on an H2 file database, while production-compat
 
 ## Enterprise F&B POS Foundation
 
-The backend now uses Flyway migration `V1__enterprise_fnb_pos_foundation.sql` for the restaurant POS expansion layer. The migration is additive and preserves the current mobile/backoffice contracts while introducing durable tables for functionality that was previously mock, JSON-only, or in-memory.
+The backend now uses Flyway migrations for the restaurant POS expansion layer. The migrations are additive and preserve the current mobile/backoffice contracts while introducing durable tables for functionality that was previously mock, JSON-only, or in-memory.
 
 Primary additions:
 
@@ -21,13 +21,50 @@ Primary additions:
 - `audit_logs`, `outbox_events`, `sync_queue`, `device_states`, `recovery_drafts`
 - `roles`, `permissions`, `role_permissions`, `staff_roles`
 
+Additional hardening and configuration migrations:
+
+- `V2__enterprise_constraints_and_indexes.sql`
+  - Adds foreign keys within the enterprise extension tables, status/money/quantity checks, uniqueness rules, and reporting/query indexes.
+  - Protects against orphaned modifier options, kitchen ticket items, recipe items, split records, payment allocations, and invalid negative payment/refund amounts.
+- `V3__catalog_inventory_price_books.sql`
+  - Adds menu item SKU/barcode/cost/archive/tax/station fields.
+  - Adds channel/location price books and `price_book_entries` for item, variant, and modifier override prices.
+  - Adds `item_channel_availability` for 86/unavailable state by item, variant, modifier, location, and channel.
+  - Adds inventory locations, ingredients, recipes, recipe items, stock movements, inventory counts, and count items.
+- `V4__financial_integrity.sql`
+  - Adds order channel/service/external/pricing snapshot fields.
+  - Adds order item variant, seat, course, fire, fulfillment, void, and price snapshot fields.
+  - Adds payment idempotency/reference/tip/cash drawer/settlement fields.
+  - Adds refund line items, payment reversals, settlement batches, split item movements, and stronger audit metadata.
+- `V5__online_channels_and_reporting.sql`
+  - Adds sales channels, channel stores, credentials metadata, webhook subscriptions, webhook events, marketplace orders, marketplace order items, catalog sync jobs, channel sales snapshots, and product mix snapshots.
+  - Extends `sync_queue` with client timestamp, server version, base revision, conflict status, merge strategy, and resolver fields.
+
 Backend API coverage added with the schema:
 
 - Modifier group/option creation and item linking under `/api/menu/modifier-groups`.
 - Item variant creation under `/api/menu/items/{itemId}/variants`.
-- Modifier validation and order quote calculation under `/api/pricing/quote`.
+- Modifier validation and order quote calculation under `/api/pricing/quote`, including `channelId`, `locationId`, `serviceType`, and `orderTime`.
 - Persistent mobile open tabs, bill requests, waiter transfers, audit events, sync queue, and recovery drafts.
+- Backoffice settings APIs for channels, channel stores, price books, price entries, inventory, recipes, stock movements, item/channel availability, catalog sync, marketplace order webhooks, marketplace accept/reject/status updates, and channel sales reporting.
 - Schema readiness probe under `/api/fnb/schema-health`.
+
+Price book precedence:
+
+1. Exact channel + location + daypart price
+2. Channel + location price
+3. Channel default price
+4. Location POS price
+5. Base item, variant, or modifier price
+
+Marketplace integration readiness:
+
+- `sales_channels` represents POS, Grab, Gojek, delivery, takeaway, or custom order sources.
+- `channel_stores` maps an internal business/location to an external marketplace outlet.
+- `channel_credentials_metadata` stores non-secret credential metadata; live secrets should remain in a secret manager.
+- `webhook_events` stores raw received events for idempotency and replay.
+- `marketplace_orders` and `marketplace_order_items` store external order payloads before or alongside internal order conversion.
+- `catalog_sync_jobs` records publish/sync requests so backoffice can show status and retry failures.
 
 Run migrations and tests with Java 21:
 

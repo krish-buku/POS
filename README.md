@@ -54,12 +54,14 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 The focused enterprise POS tests verify:
 
 - Flyway creates the F&B foundation tables.
+- Constraints reject invalid modifier/payment data.
+- Backoffice can configure a channel, price book, inventory ingredient, and marketplace order webhook.
 - Modifier groups/options can enforce required selections.
-- Pricing quotes calculate modifier deltas and totals.
+- Pricing quotes calculate modifier deltas, channel price overrides, and totals.
 
 ## Enterprise POS Foundation
 
-Migration `V1__enterprise_fnb_pos_foundation.sql` adds durable backend support for:
+Flyway migrations `V1` through `V5` add durable backend support for:
 
 - Locations and menus
 - Item variants
@@ -73,6 +75,11 @@ Migration `V1__enterprise_fnb_pos_foundation.sql` adds durable backend support f
 - Cash drawers, day close/Z-report foundation
 - Persistent audit logs, outbox events, sync queue, device state, recovery drafts
 - Roles, permissions, and staff role mappings
+- Constraints, foreign keys, and reporting indexes for the enterprise extension tables
+- Inventory ingredients, recipes, stock locations, stock movements, counts, waste/adjustment support
+- Sales channels, channel store mappings, webhook ingestion, catalog sync jobs, and marketplace orders
+- Price books and channel/location/service/daypart price overrides for POS, takeaway, delivery, Grab, Gojek, or custom channels
+- Reporting snapshots for channel sales and product mix
 
 Useful endpoints:
 
@@ -85,5 +92,25 @@ Useful endpoints:
 - `POST /api/sync-queue`
 - `POST /api/recovery-drafts`
 - `POST /api/refunds`
+- `GET/POST /api/channels`
+- `GET/POST /api/channels/{channelId}/stores`
+- `GET/POST /api/price-books`
+- `POST /api/price-books/{priceBookId}/entries`
+- `GET/POST /api/inventory/ingredients`
+- `POST /api/inventory/locations`
+- `POST /api/inventory/recipes`
+- `POST /api/inventory/recipes/{recipeId}/items`
+- `POST /api/inventory/stock-movements`
+- `POST /api/menu/availability`
+- `POST /api/channels/{channelId}/catalog-sync`
+- `POST /api/channels/{channelId}/webhooks/orders`
+- `POST /api/channels/{channelId}/orders/{orderId}/accept`
+- `POST /api/channels/{channelId}/orders/{orderId}/reject`
+- `POST /api/channels/{channelId}/orders/{orderId}/status`
+- `GET /api/reports/channel-sales`
+
+Pricing quote supports `channelId`, `locationId`, `serviceType`, and `orderTime`. Price book precedence is exact channel/location/daypart first, then channel/location, channel default, location POS, and finally the base item, variant, or modifier price.
 
 Existing mobile and backoffice endpoints are additive-compatible with these backend changes.
+
+Note: this pushed repo currently contains the backend services. The mobile and backoffice clients can consume the settings endpoints above, but their source folders are not present in this repository snapshot.

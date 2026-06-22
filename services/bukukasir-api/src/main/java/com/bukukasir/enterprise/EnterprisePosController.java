@@ -21,7 +21,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @RestController
@@ -155,20 +157,22 @@ public class EnterprisePosController {
             MenuItem item = menuUseCase.getMenuItemById(line.menuItemId());
             validateModifierSelection(item.getId(), line.modifiers());
             BigDecimal base = item.getPrice() != null ? item.getPrice() : BigDecimal.ZERO;
-            BigDecimal variantDelta = variantDelta(line.variantId(), base);
-            BigDecimal modifierDelta = modifierDelta(line.modifiers());
-            BigDecimal unit = base.add(variantDelta).add(modifierDelta);
+            BigDecimal pricedBase = resolvePrice(request, "MENU_ITEM", item.getId(), null, null, base);
+            BigDecimal variantDelta = variantDelta(request, line.variantId(), pricedBase);
+            BigDecimal modifierDelta = modifierDelta(request, line.modifiers());
+            BigDecimal unit = pricedBase.add(variantDelta).add(modifierDelta);
             int quantity = Math.max(1, line.quantity());
             BigDecimal lineTotal = unit.multiply(BigDecimal.valueOf(quantity));
             subtotal = subtotal.add(lineTotal);
-            lines.add(new PricingLineResponse(item.getId(), item.getName(), quantity, base, variantDelta, modifierDelta, unit, lineTotal));
+            lines.add(new PricingLineResponse(item.getId(), item.getName(), quantity, pricedBase, variantDelta, modifierDelta, unit, lineTotal));
         }
         BigDecimal discount = request.orderDiscount() == null ? BigDecimal.ZERO : request.orderDiscount();
         BigDecimal service = request.serviceCharge() == null ? BigDecimal.ZERO : request.serviceCharge();
         BigDecimal taxableBase = subtotal.subtract(discount).add(service).max(BigDecimal.ZERO);
         BigDecimal tax = taxTotal(request.businessId(), taxableBase);
         return ResponseEntity.ok(ApiResponse.success(new PricingQuoteResponse(
-                request.businessId(), lines, subtotal, discount, service, tax, taxableBase.add(tax))));
+                request.businessId(), request.channelId(), request.locationId(), request.serviceType(),
+                lines, subtotal, discount, service, tax, taxableBase.add(tax))));
     }
 
     @PostMapping("/api/refunds")
@@ -189,7 +193,9 @@ public class EnterprisePosController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> schemaHealth() {
         List<String> required = List.of("modifier_groups", "modifier_options", "menu_item_variants", "order_sessions",
                 "bill_requests", "waiter_transfers", "order_item_modifiers", "check_splits", "payment_allocations",
-                "refunds", "audit_logs", "sync_queue", "recovery_drafts");
+                "refunds", "audit_logs", "sync_queue", "recovery_drafts", "sales_channels", "channel_stores",
+                "price_books", "price_book_entries", "ingredients", "recipes", "stock_movements",
+                "marketplace_orders", "catalog_sync_jobs", "sales_daily_summaries");
         List<String> missing = required.stream().filter(table -> !tableExists(table)).toList();
         return ResponseEntity.ok(ApiResponse.success(Map.of(
                 "status", missing.isEmpty() ? "READY" : "MISSING_TABLES",
@@ -275,28 +281,133 @@ public class EnterprisePosController {
         }
     }
 
-    private BigDecimal variantDelta(String variantId, BigDecimal basePrice) {
+    private BigDecimal variantDelta(PricingQuoteRequest request, String variantId, BigDecimal basePrice) {
         if (variantId == null || variantId.isBlank()) {
             return BigDecimal.ZERO;
         }
         Map<String, Object> row = findById("menu_item_variants", variantId);
+        BigDecimal fallback;
         Object absolute = value(row, "absolute_price");
         if (absolute != null) {
-            return number(absolute).subtract(basePrice);
+            fallback = number(absolute).subtract(basePrice);
+        } else {
+            fallback = number(value(row, "price_delta"));
         }
-        return number(value(row, "price_delta"));
+        BigDecimal variantPrice = resolvePrice(request, "VARIANT", String.valueOf(value(row, "menu_item_id")), variantId, null, null);
+        return variantPrice != null ? variantPrice.subtract(basePrice) : fallback;
     }
 
-    private BigDecimal modifierDelta(List<PricingModifierRequest> modifiers) {
+    private BigDecimal modifierDelta(PricingQuoteRequest request, List<PricingModifierRequest> modifiers) {
         if (modifiers == null || modifiers.isEmpty()) {
             return BigDecimal.ZERO;
         }
         BigDecimal total = BigDecimal.ZERO;
         for (PricingModifierRequest modifier : modifiers) {
             Map<String, Object> option = optionById(modifier.optionId());
-            total = total.add(number(value(option, "price_delta")).multiply(BigDecimal.valueOf(Math.max(1, modifier.quantity()))));
+            BigDecimal fallback = number(value(option, "price_delta"));
+            BigDecimal channelPrice = resolvePrice(request, "MODIFIER", null, null, modifier.optionId(), null);
+            BigDecimal delta = channelPrice != null ? channelPrice : fallback;
+            total = total.add(delta.multiply(BigDecimal.valueOf(Math.max(1, modifier.quantity()))));
         }
         return total;
+    }
+
+    private BigDecimal resolvePrice(PricingQuoteRequest request, String itemType, String itemId, String variantId,
+                                    String modifierOptionId, BigDecimal fallback) {
+        List<Map<String, Object>> rows = jdbc.queryForList("""
+                SELECT pbe.price, pb.channel_id, pb.location_id, pb.service_type, pb.start_time, pb.end_time, pb.days_of_week, pb.priority
+                FROM price_book_entries pbe
+                JOIN price_books pb ON pb.id = pbe.price_book_id
+                WHERE pbe.business_id = ?
+                  AND pbe.item_type = ?
+                  AND pbe.active = TRUE
+                  AND pb.active = TRUE
+                  AND (? IS NULL OR pbe.item_id = ?)
+                  AND (? IS NULL OR pbe.variant_id = ?)
+                  AND (? IS NULL OR pbe.modifier_option_id = ?)
+                  AND (? IS NULL OR pb.channel_id = ? OR pb.channel_id IS NULL)
+                  AND (? IS NULL OR pb.location_id = ? OR pb.location_id IS NULL)
+                  AND (? IS NULL OR pb.service_type = ? OR pb.service_type IS NULL)
+                """, request.businessId(), itemType,
+                itemId, itemId,
+                variantId, variantId,
+                modifierOptionId, modifierOptionId,
+                request.channelId(), request.channelId(),
+                request.locationId(), request.locationId(),
+                request.serviceType(), request.serviceType());
+        Optional<Map<String, Object>> best = rows.stream()
+                .filter(row -> daypartMatches(row, request.orderTime()))
+                .min(Comparator
+                        .comparingInt((Map<String, Object> row) -> specificity(row, request))
+                        .thenComparing((Map<String, Object> row) -> number(value(row, "priority")), Comparator.reverseOrder()));
+        if (best.isEmpty()) {
+            return fallback;
+        }
+        return number(value(best.get(), "price"));
+    }
+
+    private int specificity(Map<String, Object> row, PricingQuoteRequest request) {
+        int score = 0;
+        if (request.channelId() != null && Objects.equals(value(row, "channel_id"), request.channelId())) {
+            score -= 4;
+        }
+        if (request.locationId() != null && Objects.equals(value(row, "location_id"), request.locationId())) {
+            score -= 2;
+        }
+        if (request.serviceType() != null && Objects.equals(value(row, "service_type"), request.serviceType())) {
+            score -= 1;
+        }
+        if (value(row, "start_time") != null || value(row, "end_time") != null || value(row, "days_of_week") != null) {
+            score -= 8;
+        }
+        return score;
+    }
+
+    private boolean daypartMatches(Map<String, Object> row, String orderTime) {
+        Object start = value(row, "start_time");
+        Object end = value(row, "end_time");
+        Object days = value(row, "days_of_week");
+        if (start == null && end == null && days == null) {
+            return true;
+        }
+        LocalDateTime timestamp = parseOrderTime(orderTime);
+        if (days != null && !String.valueOf(days).isBlank()) {
+            String dayName = timestamp.getDayOfWeek().name();
+            String shortName = shortDay(timestamp.getDayOfWeek());
+            String configured = String.valueOf(days).toUpperCase(Locale.ROOT);
+            if (!configured.contains(dayName) && !configured.contains(shortName)) {
+                return false;
+            }
+        }
+        if (start == null || end == null || String.valueOf(start).isBlank() || String.valueOf(end).isBlank()) {
+            return true;
+        }
+        LocalTime current = timestamp.toLocalTime();
+        LocalTime startTime = LocalTime.parse(String.valueOf(start));
+        LocalTime endTime = LocalTime.parse(String.valueOf(end));
+        if (endTime.isBefore(startTime)) {
+            return !current.isBefore(startTime) || !current.isAfter(endTime);
+        }
+        return !current.isBefore(startTime) && !current.isAfter(endTime);
+    }
+
+    private LocalDateTime parseOrderTime(String orderTime) {
+        if (orderTime == null || orderTime.isBlank()) {
+            return LocalDateTime.now();
+        }
+        return LocalDateTime.parse(orderTime);
+    }
+
+    private String shortDay(DayOfWeek day) {
+        return switch (day) {
+            case MONDAY -> "MON";
+            case TUESDAY -> "TUE";
+            case WEDNESDAY -> "WED";
+            case THURSDAY -> "THU";
+            case FRIDAY -> "FRI";
+            case SATURDAY -> "SAT";
+            case SUNDAY -> "SUN";
+        };
     }
 
     private BigDecimal taxTotal(String businessId, BigDecimal taxableBase) {
@@ -435,6 +546,10 @@ public class EnterprisePosController {
 
     public record PricingQuoteRequest(
             @NotBlank String businessId,
+            String channelId,
+            String locationId,
+            String serviceType,
+            String orderTime,
             @NotNull List<PricingLineRequest> items,
             BigDecimal orderDiscount,
             BigDecimal serviceCharge
@@ -462,6 +577,9 @@ public class EnterprisePosController {
 
     public record PricingQuoteResponse(
             String businessId,
+            String channelId,
+            String locationId,
+            String serviceType,
             List<PricingLineResponse> lines,
             BigDecimal subtotal,
             BigDecimal discount,
